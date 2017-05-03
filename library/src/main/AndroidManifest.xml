@@ -1,0 +1,19 @@
+<manifest package="de.timfreiheit.mozart"
+          xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <application>
+
+        <receiver android:name="android.support.v4.media.session.MediaButtonReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON"/>
+            </intent-filter>
+        </receiver>
+
+        <activity android:name=".ui.OpenAppShadowActivity"/>
+
+    </application>
+
+</manifest>

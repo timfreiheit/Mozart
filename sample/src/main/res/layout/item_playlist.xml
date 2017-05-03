@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?selectableItemBackground"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="8dp"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:paddingTop="8dp">
+
+            <ImageView
+                android:id="@+id/cover"
+                android:layout_width="60dp"
+                android:layout_height="60dp"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <TextView
+                    android:id="@+id/title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:paddingBottom="4dp"
+                    android:textStyle="bold"
+                    tools:text="Track"/>
+
+                <TextView
+                    android:id="@+id/artist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:paddingTop="4dp"
+                    tools:text="Artist"/>
+
+            </LinearLayout>
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center">
+
+                <ImageView
+                    android:id="@+id/playpause"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="12dp"
+                    app:srcCompat="@drawable/ic_play_arrow_black_24dp"/>
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"/>
+
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#AAA"/>
+
+    </LinearLayout>
+
+</layout>
