@@ -43,6 +43,7 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
+import de.timfreiheit.mozart.model.MozartMediaImageLoader;
 import de.timfreiheit.mozart.model.MozartMediaProvider;
 import de.timfreiheit.mozart.playback.LocalMediaPlayerPlayback;
 import de.timfreiheit.mozart.playback.Playback;
@@ -205,6 +206,8 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
     public abstract MozartMediaProvider getMediaProvider();
 
     public abstract MozartMediaNotificationManager getMediaNotificationManager();
+
+    public abstract MozartMediaImageLoader getImageLoader();
 
     public Playback createLocalPlayback() {
         return new LocalMediaPlayerPlayback(this);

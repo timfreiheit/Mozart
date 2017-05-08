@@ -53,61 +53,91 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
     private static final int NOTIFICATION_ID = 412;
     private static final int REQUEST_CODE = 100;
 
-    public static final String ACTION_PAUSE = "com.example.android.uamp.pause";
-    public static final String ACTION_PLAY = "com.example.android.uamp.play";
-    public static final String ACTION_PREV = "com.example.android.uamp.prev";
-    public static final String ACTION_NEXT = "com.example.android.uamp.next";
-    public static final String ACTION_STOP_CASTING = "com.example.android.uamp.stop_cast";
+    public static final String ACTION_PAUSE = "de.timfreiheit.mozart.pause";
+    public static final String ACTION_PLAY = "de.timfreiheit.mozart.play";
+    public static final String ACTION_PREV = "de.timfreiheit.mozart.prev";
+    public static final String ACTION_NEXT = "de.timfreiheit.mozart.next";
+    public static final String ACTION_STOP = "de.timfreiheit.mozart.stop";
+    public static final String ACTION_STOP_CASTING = "de.timfreiheit.mozart.stop_cast";
 
-    private final MozartMusicService mService;
+    private final MozartMusicService service;
     private MediaSessionCompat.Token mSessionToken;
-    private MediaControllerCompat mController;
-    private MediaControllerCompat.TransportControls mTransportControls;
+    private MediaControllerCompat controller;
+    private MediaControllerCompat.TransportControls transportControls;
 
-    private PlaybackStateCompat mPlaybackState;
-    private MediaMetadataCompat mMetadata;
+    private PlaybackStateCompat playbackState;
+    private MediaMetadataCompat metadata;
 
-    private final NotificationManagerCompat mNotificationManager;
+    private final NotificationManagerCompat notificationManager;
 
-    private final PendingIntent mPauseIntent;
-    private final PendingIntent mPlayIntent;
-    private final PendingIntent mPreviousIntent;
-    private final PendingIntent mNextIntent;
+    private final PendingIntent pauseIntent;
+    private final PendingIntent playIntent;
+    private final PendingIntent previousIntent;
+    private final PendingIntent nextIntent;
+    private final PendingIntent stopIntent;
 
-    private final PendingIntent mStopCastIntent;
+    private final PendingIntent stopCastIntent;
 
-    private final int mNotificationColor;
+    private final int notificationColor;
 
-    private boolean mStarted = false;
+    private boolean started = false;
 
     private String lastCoverImageUrl;
     private Bitmap lastCoverImage;
 
     public MozartMediaNotificationManager(MozartMusicService service) throws RemoteException {
-        mService = service;
+        this.service = service;
         updateSessionToken();
 
-        mNotificationColor = ResourceHelper.getThemeColor(mService, R.attr.colorPrimary,
+        notificationColor = ResourceHelper.getThemeColor(this.service, R.attr.colorPrimary,
                 Color.DKGRAY);
 
-        mNotificationManager = NotificationManagerCompat.from(service);
+        notificationManager = NotificationManagerCompat.from(service);
 
-        String pkg = mService.getPackageName();
-        mPauseIntent = PendingIntent.getBroadcast(mService, REQUEST_CODE,
-                new Intent(ACTION_PAUSE).setPackage(pkg), PendingIntent.FLAG_CANCEL_CURRENT);
-        mPlayIntent = PendingIntent.getBroadcast(mService, REQUEST_CODE,
-                new Intent(ACTION_PLAY).setPackage(pkg), PendingIntent.FLAG_CANCEL_CURRENT);
-        mPreviousIntent = PendingIntent.getBroadcast(mService, REQUEST_CODE,
-                new Intent(ACTION_PREV).setPackage(pkg), PendingIntent.FLAG_CANCEL_CURRENT);
-        mNextIntent = PendingIntent.getBroadcast(mService, REQUEST_CODE,
-                new Intent(ACTION_NEXT).setPackage(pkg), PendingIntent.FLAG_CANCEL_CURRENT);
-        mStopCastIntent = PendingIntent.getBroadcast(mService, REQUEST_CODE,
+        String pkg = this.service.getPackageName();
+        pauseIntent = PendingIntent.getBroadcast(
+                this.service,
+                REQUEST_CODE,
+                new Intent(ACTION_PAUSE).setPackage(pkg),
+                PendingIntent.FLAG_CANCEL_CURRENT
+        );
+
+        playIntent = PendingIntent.getBroadcast(
+                this.service,
+                REQUEST_CODE,
+                new Intent(ACTION_PLAY).setPackage(pkg),
+                PendingIntent.FLAG_CANCEL_CURRENT
+        );
+
+        previousIntent = PendingIntent.getBroadcast(
+                this.service,
+                REQUEST_CODE,
+                new Intent(ACTION_PREV).setPackage(pkg),
+                PendingIntent.FLAG_CANCEL_CURRENT
+        );
+
+        nextIntent = PendingIntent.getBroadcast(
+                this.service, REQUEST_CODE,
+                new Intent(ACTION_NEXT).setPackage(pkg),
+                PendingIntent.FLAG_CANCEL_CURRENT
+        );
+
+        stopIntent = PendingIntent.getBroadcast(
+                this.service, REQUEST_CODE,
+                new Intent(ACTION_STOP).setPackage(pkg),
+                PendingIntent.FLAG_CANCEL_CURRENT
+        );
+
+        stopCastIntent = PendingIntent.getBroadcast(
+                this.service,
+                REQUEST_CODE,
                 new Intent(ACTION_STOP_CASTING).setPackage(pkg),
-                PendingIntent.FLAG_CANCEL_CURRENT);
+                PendingIntent.FLAG_CANCEL_CURRENT
+        );
 
         // Cancel all notifications to handle the case where the Service was killed and
         // restarted by the system.
-        mNotificationManager.cancelAll();
+        notificationManager.cancelAll();
     }
 
     /**
@@ -117,24 +147,25 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
      */
     @MainThread
     public void startNotification() {
-        if (!mStarted) {
-            mMetadata = mController.getMetadata();
-            mPlaybackState = mController.getPlaybackState();
+        if (!started) {
+            metadata = controller.getMetadata();
+            playbackState = controller.getPlaybackState();
 
             // The notification must be updated after setting started to true
             Notification notification = createNotification();
             if (notification != null) {
-                mController.registerCallback(mCb);
+                controller.registerCallback(mCb);
                 IntentFilter filter = new IntentFilter();
                 filter.addAction(ACTION_NEXT);
                 filter.addAction(ACTION_PAUSE);
                 filter.addAction(ACTION_PLAY);
                 filter.addAction(ACTION_PREV);
+                filter.addAction(ACTION_STOP);
                 filter.addAction(ACTION_STOP_CASTING);
-                mService.registerReceiver(this, filter);
+                service.registerReceiver(this, filter);
 
-                mService.startForeground(NOTIFICATION_ID, notification);
-                mStarted = true;
+                service.startForeground(NOTIFICATION_ID, notification);
+                started = true;
             }
         }
     }
@@ -144,16 +175,16 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
      * was destroyed this has no effect.
      */
     public void stopNotification() {
-        if (mStarted) {
-            mStarted = false;
-            mController.unregisterCallback(mCb);
+        if (started) {
+            started = false;
+            controller.unregisterCallback(mCb);
             try {
-                mNotificationManager.cancel(NOTIFICATION_ID);
-                mService.unregisterReceiver(this);
+                notificationManager.cancel(NOTIFICATION_ID);
+                service.unregisterReceiver(this);
             } catch (IllegalArgumentException ex) {
                 // ignore if the receiver is not registered.
             }
-            mService.stopForeground(true);
+            service.stopForeground(true);
         }
     }
 
@@ -163,22 +194,25 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
         Timber.d("Received intent with action " + action);
         switch (action) {
             case ACTION_PAUSE:
-                mTransportControls.pause();
+                transportControls.pause();
                 break;
             case ACTION_PLAY:
-                mTransportControls.play();
+                transportControls.play();
                 break;
             case ACTION_NEXT:
-                mTransportControls.skipToNext();
+                transportControls.skipToNext();
                 break;
             case ACTION_PREV:
-                mTransportControls.skipToPrevious();
+                transportControls.skipToPrevious();
+                break;
+            case ACTION_STOP:
+                transportControls.stop();
                 break;
             case ACTION_STOP_CASTING:
                 Intent i = new Intent(context, MozartMusicService.class);
                 i.setAction(MozartMusicService.ACTION_CMD);
                 i.putExtra(MozartMusicService.CMD_NAME, MozartMusicService.CMD_STOP_CASTING);
-                mService.startService(i);
+                service.startService(i);
                 break;
             default:
                 Timber.w("Unknown intent ignored. Action %s", action);
@@ -191,33 +225,33 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
      * (see {@link android.media.session.MediaController.Callback#onSessionDestroyed()})
      */
     private void updateSessionToken() throws RemoteException {
-        MediaSessionCompat.Token freshToken = mService.getSessionToken();
+        MediaSessionCompat.Token freshToken = service.getSessionToken();
         if (mSessionToken == null && freshToken != null ||
                 mSessionToken != null && !mSessionToken.equals(freshToken)) {
-            if (mController != null) {
-                mController.unregisterCallback(mCb);
+            if (controller != null) {
+                controller.unregisterCallback(mCb);
             }
             mSessionToken = freshToken;
             if (mSessionToken != null) {
-                mController = new MediaControllerCompat(mService, mSessionToken);
-                mTransportControls = mController.getTransportControls();
-                if (mStarted) {
-                    mController.registerCallback(mCb);
+                controller = new MediaControllerCompat(service, mSessionToken);
+                transportControls = controller.getTransportControls();
+                if (started) {
+                    controller.registerCallback(mCb);
                 }
             }
         }
     }
 
     protected PendingIntent createContentIntent(MediaDescriptionCompat description) {
-        Intent openUI = new Intent(mService, OpenAppShadowActivity.class);
-        return PendingIntent.getActivity(mService, REQUEST_CODE, openUI,
+        Intent openUI = new Intent(service, OpenAppShadowActivity.class);
+        return PendingIntent.getActivity(service, REQUEST_CODE, openUI,
                 PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
     private final MediaControllerCompat.Callback mCb = new MediaControllerCompat.Callback() {
         @Override
         public void onPlaybackStateChanged(@NonNull PlaybackStateCompat state) {
-            mPlaybackState = state;
+            playbackState = state;
             Timber.d("Received new playback state %s", state);
             if (state.getState() == PlaybackStateCompat.STATE_STOPPED ||
                     state.getState() == PlaybackStateCompat.STATE_NONE) {
@@ -225,18 +259,18 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
             } else {
                 Notification notification = createNotification();
                 if (notification != null) {
-                    mNotificationManager.notify(NOTIFICATION_ID, notification);
+                    notificationManager.notify(NOTIFICATION_ID, notification);
                 }
             }
         }
 
         @Override
         public void onMetadataChanged(MediaMetadataCompat metadata) {
-            mMetadata = metadata;
+            MozartMediaNotificationManager.this.metadata = metadata;
             Timber.d("Received new metadata %s", metadata);
             Notification notification = createNotification();
             if (notification != null) {
-                mNotificationManager.notify(NOTIFICATION_ID, notification);
+                notificationManager.notify(NOTIFICATION_ID, notification);
             }
         }
 
@@ -252,36 +286,17 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
         }
     };
 
-    private Notification createNotification() {
-        Timber.d("updateNotificationMetadata. mMetadata= %s" + mMetadata);
-        if (mMetadata == null || mPlaybackState == null) {
+    protected Notification createNotification() {
+        Timber.d("updateNotificationMetadata. mMetadata= %s" + metadata);
+        if (metadata == null || playbackState == null) {
             return null;
         }
 
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(mService);
-        int playPauseButtonPosition = 0;
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(service);
 
-        // If skip to previous action is enabled
-        if ((mPlaybackState.getActions() & PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS) != 0) {
-            notificationBuilder.addAction(R.drawable.ic_skip_previous_white_24dp,
-                    mService.getString(R.string.label_previous), mPreviousIntent);
+        addNotificationsActions(notificationBuilder);
 
-            // If there is a "skip to previous" button, the play/pause button will
-            // be the second one. We need to keep track of it, because the MediaStyle notification
-            // requires to specify the index of the buttons (actions) that should be visible
-            // when in compact view.
-            playPauseButtonPosition = 1;
-        }
-
-        addPlayPauseAction(notificationBuilder);
-
-        // If skip to next action is enabled
-        if ((mPlaybackState.getActions() & PlaybackStateCompat.ACTION_SKIP_TO_NEXT) != 0) {
-            notificationBuilder.addAction(R.drawable.ic_skip_next_white_24dp,
-                    mService.getString(R.string.label_next), mNextIntent);
-        }
-
-        MediaDescriptionCompat description = mMetadata.getDescription();
+        MediaDescriptionCompat description = metadata.getDescription();
 
         String fetchArtUrl = null;
         Bitmap art = null;
@@ -292,56 +307,57 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
             String artUrl = description.getIconUri().toString();
             if (artUrl != null && artUrl.equals(lastCoverImageUrl)) {
                 art = lastCoverImage;
+            } else {
+                art = service.getImageLoader().getCachedBitmapFromMemory(artUrl);
             }
             if (art == null) {
                 fetchArtUrl = artUrl;
                 // use a placeholder art while the remote art is being downloaded
-                art = BitmapFactory.decodeResource(mService.getResources(),
-                        R.drawable.ic_default_art);
+                art = getDetailCover();
             }
         }
 
         notificationBuilder
-                .setStyle(new NotificationCompat.MediaStyle()
-                        .setShowActionsInCompactView(
-                                new int[]{playPauseButtonPosition})  // show only play/pause in compact view
-                        .setMediaSession(mSessionToken))
-                .setColor(mNotificationColor)
+                .setStyle(createMediaStyle())
+                .setColor(notificationColor)
                 .setSmallIcon(getNotificationIcon())
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setUsesChronometer(true)
                 .setContentIntent(createContentIntent(description))
                 .setContentTitle(description.getTitle())
-                .setContentText(description.getSubtitle())
-                .setLargeIcon(art);
+                .setContentText(description.getSubtitle());
 
-        if (mController != null && mController.getExtras() != null) {
-            String castName = mController.getExtras().getString(MozartMusicService.EXTRA_CONNECTED_CAST);
+        if (art != null) {
+            notificationBuilder.setLargeIcon(art);
+        }
+
+        if (controller != null && controller.getExtras() != null) {
+            String castName = controller.getExtras().getString(MozartMusicService.EXTRA_CONNECTED_CAST);
             if (castName != null) {
-                String castInfo = mService.getResources()
+                String castInfo = service.getResources()
                         .getString(R.string.casting_to_device, castName);
                 notificationBuilder.setSubText(castInfo);
                 notificationBuilder.addAction(R.drawable.ic_dialog_close_light,
-                        mService.getString(R.string.stop_casting), mStopCastIntent);
+                        service.getString(R.string.stop_casting), stopCastIntent);
             }
         }
 
         setNotificationPlaybackState(notificationBuilder);
         if (fetchArtUrl != null) {
             String finalFetchArtUrl = fetchArtUrl;
-            fetchBitmapFromURLAsync(fetchArtUrl)
+            service.getImageLoader().loadCover(fetchArtUrl)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(bitmap -> {
-                        if (mMetadata != null && mMetadata.getDescription().getIconUri() != null &&
-                                mMetadata.getDescription().getIconUri().toString().equals(finalFetchArtUrl)) {
+                        if (metadata != null && metadata.getDescription().getIconUri() != null &&
+                                metadata.getDescription().getIconUri().toString().equals(finalFetchArtUrl)) {
                             lastCoverImage = bitmap;
                             lastCoverImageUrl = finalFetchArtUrl;
 
                             // If the media is still the same, update the notification:
                             Timber.d("fetchBitmapFromURLAsync: set bitmap to %s", finalFetchArtUrl);
                             notificationBuilder.setLargeIcon(bitmap);
-                            mNotificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
+                            notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
                         }
                     }, throwable -> {
                         Timber.d(throwable, "error fetchBitmapFromURLAsync: set bitmap to %s", finalFetchArtUrl);
@@ -353,36 +369,68 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
 
     protected abstract int getNotificationIcon();
 
+    protected Bitmap getDetailCover() {
+        return BitmapFactory.decodeResource(service.getResources(), R.drawable.ic_default_art);
+    }
+
+    protected NotificationCompat.MediaStyle createMediaStyle() {
+
+        int[] compactViewActions = new int[]{0, 1, 2};
+
+        return new NotificationCompat.MediaStyle()
+                .setShowActionsInCompactView(compactViewActions)
+                .setShowCancelButton(true)
+                .setCancelButtonIntent(stopIntent)
+                .setMediaSession(mSessionToken);
+    }
+
+    protected void addNotificationsActions(NotificationCompat.Builder builder) {
+
+        if ((playbackState.getActions() & PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS) != 0) {
+            builder.addAction(R.drawable.ic_skip_previous_white_24dp,
+                    service.getString(R.string.label_previous), previousIntent);
+        }
+
+        addPlayPauseAction(builder);
+
+        // If skip to next action is enabled
+        if ((playbackState.getActions() & PlaybackStateCompat.ACTION_SKIP_TO_NEXT) != 0) {
+            builder.addAction(R.drawable.ic_skip_next_white_24dp,
+                    service.getString(R.string.label_next), nextIntent);
+        }
+
+    }
+
     private void addPlayPauseAction(NotificationCompat.Builder builder) {
         Timber.d("updatePlayPauseAction");
         String label;
         int icon;
         PendingIntent intent;
-        if (mPlaybackState.getState() == PlaybackStateCompat.STATE_PLAYING) {
-            label = mService.getString(R.string.label_pause);
+        if (playbackState.getState() == PlaybackStateCompat.STATE_PLAYING) {
+            label = service.getString(R.string.label_pause);
             icon = R.drawable.uamp_ic_pause_white_24dp;
-            intent = mPauseIntent;
+            intent = pauseIntent;
         } else {
-            label = mService.getString(R.string.label_play);
+            label = service.getString(R.string.label_play);
             icon = R.drawable.uamp_ic_play_arrow_white_24dp;
-            intent = mPlayIntent;
+            intent = playIntent;
         }
         builder.addAction(new NotificationCompat.Action(icon, label, intent));
     }
 
     private void setNotificationPlaybackState(NotificationCompat.Builder builder) {
-        Timber.d("updateNotificationPlaybackState. mPlaybackState=" + mPlaybackState);
-        if (mPlaybackState == null || !mStarted) {
+        Timber.d("updateNotificationPlaybackState. mPlaybackState=" + playbackState);
+        if (playbackState == null || !started) {
             Timber.d("updateNotificationPlaybackState. cancelling notification!");
-            mService.stopForeground(true);
+            service.stopForeground(true);
             return;
         }
-        if (mPlaybackState.getState() == PlaybackStateCompat.STATE_PLAYING
-                && mPlaybackState.getPosition() >= 0) {
+        if (playbackState.getState() == PlaybackStateCompat.STATE_PLAYING
+                && playbackState.getPosition() >= 0) {
             Timber.d("updateNotificationPlaybackState. updating playback position to %d seconds",
-                    (System.currentTimeMillis() - mPlaybackState.getPosition()) / 1000);
+                    (System.currentTimeMillis() - playbackState.getPosition()) / 1000);
             builder
-                    .setWhen(System.currentTimeMillis() - mPlaybackState.getPosition())
+                    .setWhen(System.currentTimeMillis() - playbackState.getPosition())
                     .setShowWhen(true)
                     .setUsesChronometer(true);
         } else {
@@ -394,13 +442,6 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
         }
 
         // Make sure that the notification can be dismissed by the user when we are not playing:
-        builder.setOngoing(mPlaybackState.getState() == PlaybackStateCompat.STATE_PLAYING);
+        builder.setOngoing(playbackState.getState() == PlaybackStateCompat.STATE_PLAYING);
     }
-
-    /**
-     * load bitmap from url
-     *
-     * @param bitmapUrl url
-     */
-    public abstract Single<Bitmap> fetchBitmapFromURLAsync(final String bitmapUrl);
 }

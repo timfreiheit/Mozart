@@ -4,7 +4,9 @@ import android.os.RemoteException;
 
 import de.timfreiheit.mozart.MozartMediaNotificationManager;
 import de.timfreiheit.mozart.MozartMusicService;
+import de.timfreiheit.mozart.model.MozartMediaImageLoader;
 import de.timfreiheit.mozart.model.MozartMediaProvider;
+import de.timfreiheit.mozart.sample.ImageLoader;
 
 public class MusicService extends MozartMusicService {
 
@@ -25,5 +27,10 @@ public class MusicService extends MozartMusicService {
             }
         }
         return mediaNotificationManager;
+    }
+
+    @Override
+    public MozartMediaImageLoader getImageLoader() {
+        return ImageLoader.getInstance();
     }
 }

@@ -142,12 +142,7 @@ public class QueueManager {
     public Completable setQueueFromPlaylist(Playlist playlist, int initialPosition) {
         return Completable.fromAction(() -> {
             this.playlist = playlist;
-            if (initialPosition < 0 || initialPosition >= playlist.getPlaylist().size()) {
-                currentIndex = 0;
-            } else {
-                currentIndex = initialPosition;
-            }
-            setCurrentQueue(playlist.getTitle(), QueueHelper.mediaQueueFromPlaylist(playlist), currentIndex);
+            setCurrentQueue(playlist.getTitle(), QueueHelper.mediaQueueFromPlaylist(playlist), initialPosition);
         }).doOnComplete(this::updateMetadata);
     }
 
