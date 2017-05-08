@@ -25,7 +25,6 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 
 import de.timfreiheit.mozart.MozartMusicService;
-import de.timfreiheit.mozart.model.MozartMediaProvider;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableSingleObserver;
 import io.reactivex.schedulers.Schedulers;
@@ -126,7 +125,6 @@ public class PlaybackManager implements Playback.Callback {
             position = playback.getCurrentStreamPosition();
         }
 
-        //noinspection ResourceType
         PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder()
                 .setActions(getAvailableActions());
 
@@ -140,7 +138,7 @@ public class PlaybackManager implements Playback.Callback {
             stateBuilder.setErrorMessage(error);
             state = PlaybackStateCompat.STATE_ERROR;
         }
-        //noinspection ResourceType
+        
         stateBuilder.setState(state, position, 1.0f, SystemClock.elapsedRealtime());
 
         // Set the activeQueueItemId if the current index is valid.
@@ -161,18 +159,24 @@ public class PlaybackManager implements Playback.Callback {
 
     }
 
-    private long getAvailableActions() {
-        long actions =
-                PlaybackStateCompat.ACTION_PLAY_PAUSE |
-                        PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID |
-                        PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH |
-                        PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS |
-                        PlaybackStateCompat.ACTION_SKIP_TO_NEXT;
+    public long getAvailableActions() {
+        long actions = PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID;
+
         if (playback.isPlaying()) {
             actions |= PlaybackStateCompat.ACTION_PAUSE;
         } else {
             actions |= PlaybackStateCompat.ACTION_PLAY;
         }
+
+        int playlistSize = mozartMusicService.getQueueManager().getCurrentQueueSize();
+        int currentIndex = mozartMusicService.getQueueManager().getCurrentIndex();
+
+        actions |= PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS;
+
+        if (currentIndex < playlistSize -1) {
+            actions |= PlaybackStateCompat.ACTION_SKIP_TO_NEXT;
+        }
+
         return actions;
     }
 

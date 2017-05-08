@@ -16,7 +16,6 @@
 
 package de.timfreiheit.mozart.playback;
 
-import android.support.annotation.NonNull;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 
@@ -48,6 +47,8 @@ public class QueueManager {
     private List<MediaSessionCompat.QueueItem> playingQueue;
     private int currentIndex;
 
+    private boolean repeatMode = false;
+
     public QueueManager(MozartMusicService service) {
         this.listener = service;
         mozartMusicService = service;
@@ -61,6 +62,14 @@ public class QueueManager {
             currentIndex = index;
             listener.onCurrentQueueIndexUpdated(currentIndex);
         }
+    }
+
+    public void setRepeatMode(boolean value) {
+        repeatMode = value;
+    }
+
+    public boolean isInRepeatMode() {
+        return repeatMode;
     }
 
     public boolean setCurrentQueueItem(long queueId) {
@@ -83,8 +92,10 @@ public class QueueManager {
             // skip backwards before the first song will keep you on the first song
             index = 0;
         } else {
-            // skip forwards when in last song will cycle back to start of the queue
-            index %= playingQueue.size();
+            if (repeatMode) {
+                // skip forwards when in last song will cycle back to start of the queue
+                index %= playingQueue.size();
+            }
         }
         if (!QueueHelper.isIndexPlayable(index, playingQueue)) {
             Timber.e("Cannot increment queue index by %d. Current=%d queue length=%d", amount, currentIndex, playingQueue.size());
@@ -99,6 +110,10 @@ public class QueueManager {
             return null;
         }
         return playingQueue.get(currentIndex);
+    }
+
+    public int getCurrentIndex() {
+        return currentIndex;
     }
 
     public int getCurrentQueueSize() {

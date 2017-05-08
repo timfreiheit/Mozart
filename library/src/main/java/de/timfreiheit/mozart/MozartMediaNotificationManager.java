@@ -36,9 +36,11 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.NotificationCompat;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import de.timfreiheit.mozart.ui.OpenAppShadowActivity;
 import de.timfreiheit.mozart.utils.ResourceHelper;
-import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
@@ -294,7 +296,7 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(service);
 
-        addNotificationsActions(notificationBuilder);
+        int availableActions = addNotificationsActions(notificationBuilder);
 
         MediaDescriptionCompat description = metadata.getDescription();
 
@@ -318,7 +320,7 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
         }
 
         notificationBuilder
-                .setStyle(createMediaStyle())
+                .setStyle(createMediaStyle(availableActions))
                 .setColor(notificationColor)
                 .setSmallIcon(getNotificationIcon())
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -373,9 +375,19 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
         return BitmapFactory.decodeResource(service.getResources(), R.drawable.ic_default_art);
     }
 
-    protected NotificationCompat.MediaStyle createMediaStyle() {
+    protected NotificationCompat.MediaStyle createMediaStyle(int availableActions) {
 
-        int[] compactViewActions = new int[]{0, 1, 2};
+        if(availableActions < 0) {
+            availableActions = 0;
+        }
+        if (availableActions > 3){
+            availableActions = 3;
+        }
+
+        int[] compactViewActions = new int[availableActions];
+        for (int i = 0; i < compactViewActions.length; i++) {
+            compactViewActions[i] = i;
+        }
 
         return new NotificationCompat.MediaStyle()
                 .setShowActionsInCompactView(compactViewActions)
@@ -384,25 +396,15 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
                 .setMediaSession(mSessionToken);
     }
 
-    protected void addNotificationsActions(NotificationCompat.Builder builder) {
+    protected int addNotificationsActions(NotificationCompat.Builder builder) {
 
+        int availableActions = 0;
         if ((playbackState.getActions() & PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS) != 0) {
             builder.addAction(R.drawable.ic_skip_previous_white_24dp,
                     service.getString(R.string.label_previous), previousIntent);
+            availableActions++;
         }
 
-        addPlayPauseAction(builder);
-
-        // If skip to next action is enabled
-        if ((playbackState.getActions() & PlaybackStateCompat.ACTION_SKIP_TO_NEXT) != 0) {
-            builder.addAction(R.drawable.ic_skip_next_white_24dp,
-                    service.getString(R.string.label_next), nextIntent);
-        }
-
-    }
-
-    private void addPlayPauseAction(NotificationCompat.Builder builder) {
-        Timber.d("updatePlayPauseAction");
         String label;
         int icon;
         PendingIntent intent;
@@ -416,6 +418,16 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
             intent = playIntent;
         }
         builder.addAction(new NotificationCompat.Action(icon, label, intent));
+        availableActions++;
+
+        // If skip to next action is enabled
+        if ((playbackState.getActions() & PlaybackStateCompat.ACTION_SKIP_TO_NEXT) != 0) {
+            builder.addAction(R.drawable.ic_skip_next_white_24dp,
+                    service.getString(R.string.label_next), nextIntent);
+            availableActions++;
+        }
+
+        return availableActions;
     }
 
     private void setNotificationPlaybackState(NotificationCompat.Builder builder) {
