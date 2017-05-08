@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import de.timfreiheit.mozart.MozartMusicService;
 import de.timfreiheit.mozart.model.MozartMediaMetadata;
-import de.timfreiheit.mozart.model.MozartMediaProvider;
 import de.timfreiheit.mozart.model.Playlist;
 import de.timfreiheit.mozart.utils.QueueHelper;
 import io.reactivex.Completable;
@@ -40,7 +40,7 @@ import timber.log.Timber;
  */
 public class QueueManager {
 
-    private MozartMediaProvider mediaProvider;
+    private MozartMusicService mozartMusicService;
     private MetadataUpdateListener listener;
 
     // "Now playing" queue:
@@ -48,9 +48,9 @@ public class QueueManager {
     private List<MediaSessionCompat.QueueItem> playingQueue;
     private int currentIndex;
 
-    public QueueManager(MozartMediaProvider mediaProvider, @NonNull MetadataUpdateListener listener) {
-        this.listener = listener;
-        this.mediaProvider = mediaProvider;
+    public QueueManager(MozartMusicService service) {
+        this.listener = service;
+        mozartMusicService = service;
         playlist = new Playlist(null, null, Collections.emptyList());
         playingQueue = Collections.synchronizedList(new ArrayList<MediaSessionCompat.QueueItem>());
         currentIndex = 0;
@@ -109,7 +109,7 @@ public class QueueManager {
     }
 
     public Completable setQueueByMediaId(String mediaId) {
-        return mediaProvider.getMediaById(mediaId)
+        return mozartMusicService.getMediaProvider().getMediaById(mediaId)
                 .flatMapCompletable(mediaMetadataCompat -> setQueueFromPlaylist(new Playlist(null, null, Collections.singletonList(mediaMetadataCompat)), 0))
                 .doOnComplete(this::updateMetadata);
     }
@@ -127,7 +127,7 @@ public class QueueManager {
     }
 
     public Completable setQueueByPlaylistId(String playlistId, String initialMedia) {
-        return mediaProvider.getPlaylistById(playlistId)
+        return mozartMusicService.getMediaProvider().getPlaylistById(playlistId)
                 .flatMapCompletable(playlist1 -> {
                     int index = playlist1.getPositionByMediaId(initialMedia);
                     return setQueueFromPlaylist(playlist1, index);
@@ -135,7 +135,7 @@ public class QueueManager {
     }
 
     public Completable setQueueByPlaylistId(String playlistId, int initialPosition) {
-        return mediaProvider.getPlaylistById(playlistId)
+        return mozartMusicService.getMediaProvider().getPlaylistById(playlistId)
                 .flatMapCompletable(playlist1 -> setQueueFromPlaylist(playlist1, initialPosition));
     }
 
@@ -172,7 +172,7 @@ public class QueueManager {
                     }
                 }
             }
-            return mediaProvider.getMediaById(currentMusic.getDescription().getMediaId());
+            return mozartMusicService.getMediaProvider().getMediaById(currentMusic.getDescription().getMediaId());
         }).subscribeOn(Schedulers.io())
                 .subscribe(metadata -> {
                     metadata = new MediaMetadataCompat.Builder(metadata)

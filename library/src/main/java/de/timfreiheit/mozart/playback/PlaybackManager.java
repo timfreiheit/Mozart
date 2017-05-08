@@ -24,6 +24,7 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 
+import de.timfreiheit.mozart.MozartMusicService;
 import de.timfreiheit.mozart.model.MozartMediaProvider;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableSingleObserver;
@@ -35,24 +36,18 @@ import timber.log.Timber;
  */
 public class PlaybackManager implements Playback.Callback {
 
-    private MozartMediaProvider mediaProvider;
-    private QueueManager queueManager;
+    private MozartMusicService mozartMusicService;
     private Playback playback;
     private PlaybackServiceCallback serviceCallback;
     private MediaSessionCallback mediaSessionCallback;
 
     private final CompositeDisposable getDataDisposable = new CompositeDisposable();
 
-    public PlaybackManager(
-            MozartMediaProvider mediaProvider,
-            PlaybackServiceCallback serviceCallback,
-            QueueManager queueManager,
-            Playback playback) {
-        this.mediaProvider = mediaProvider;
-        this.serviceCallback = serviceCallback;
-        this.queueManager = queueManager;
+    public PlaybackManager(MozartMusicService service) {
+        this.serviceCallback = service;
         mediaSessionCallback = new MediaSessionCallback();
-        this.playback = playback;
+        this.mozartMusicService = service;
+        this.playback = service.createLocalPlayback();
         this.playback.setCallback(this);
     }
 
@@ -69,7 +64,7 @@ public class PlaybackManager implements Playback.Callback {
      */
     public void handlePlayRequest() {
         Timber.d("handlePlayRequest: mState= %d", playback.getState());
-        MediaSessionCompat.QueueItem currentMusic = queueManager.getCurrentMusic();
+        MediaSessionCompat.QueueItem currentMusic = mozartMusicService.getQueueManager().getCurrentMusic();
         if (currentMusic != null) {
             playMediaById(currentMusic.getDescription().getMediaId());
         }
@@ -77,7 +72,7 @@ public class PlaybackManager implements Playback.Callback {
 
     public void playMediaById(String mediaId) {
         getDataDisposable.clear();
-        getDataDisposable.add(mediaProvider.getMediaById(mediaId)
+        getDataDisposable.add(mozartMusicService.getMediaProvider().getMediaById(mediaId)
                 .subscribeOn(Schedulers.io())
                 .subscribeWith(new DisposableSingleObserver<MediaMetadataCompat>() {
                     @Override
@@ -149,7 +144,7 @@ public class PlaybackManager implements Playback.Callback {
         stateBuilder.setState(state, position, 1.0f, SystemClock.elapsedRealtime());
 
         // Set the activeQueueItemId if the current index is valid.
-        MediaSessionCompat.QueueItem currentMusic = queueManager.getCurrentMusic();
+        MediaSessionCompat.QueueItem currentMusic = mozartMusicService.getQueueManager().getCurrentMusic();
         if (currentMusic != null) {
             stateBuilder.setActiveQueueItemId(currentMusic.getQueueId());
         }
@@ -188,9 +183,9 @@ public class PlaybackManager implements Playback.Callback {
     public void onCompletion() {
         // The media player finished playing the current song, so we go ahead
         // and start the next.
-        if (queueManager.skipQueuePosition(1)) {
+        if (mozartMusicService.getQueueManager().skipQueuePosition(1)) {
             handlePlayRequest();
-            queueManager.updateMetadata();
+            mozartMusicService.getQueueManager().updateMetadata();
         } else {
             // If skipping was not possible, we stop and release the resources:
             handleStopRequest(null);
@@ -234,7 +229,7 @@ public class PlaybackManager implements Playback.Callback {
                 this.playback.pause();
                 break;
             case PlaybackStateCompat.STATE_PLAYING:
-                MediaSessionCompat.QueueItem currentMusic = queueManager.getCurrentMusic();
+                MediaSessionCompat.QueueItem currentMusic = mozartMusicService.getQueueManager().getCurrentMusic();
                 if (resumePlaying && currentMusic != null) {
                     playMediaById(currentMusic.getDescription().getMediaId());
                 } else if (!resumePlaying) {
@@ -252,28 +247,28 @@ public class PlaybackManager implements Playback.Callback {
 
     public void handlePlayFromMediaId(String mediaId, Bundle extras) {
         Timber.d("handlePlayFromMediaId() called with " + "mediaId = [" + mediaId + "], extras = [" + extras + "]");
-        queueManager.updateQueueByMediaId(mediaId)
+        mozartMusicService.getQueueManager().updateQueueByMediaId(mediaId)
                 .subscribe(this::handlePlayRequest, throwable -> {
                 });
     }
 
     public void handlePlaySingleMediaId(String mediaId) {
         Timber.d("handlePlaySingleMediaId() called with " + "mediaId = [" + mediaId + "]");
-        queueManager.setQueueByMediaId(mediaId)
+        mozartMusicService.getQueueManager().setQueueByMediaId(mediaId)
                 .subscribe(this::handlePlayRequest, throwable -> {
                 });
     }
 
     public void handlePlayPlaylist(String playlistId, String mediaId) {
         Timber.d("handlePlayPlaylist() called with " + "playlistId = [" + playlistId + "], mediaId = [" + mediaId + "]");
-        queueManager.setQueueByPlaylistId(playlistId, mediaId)
+        mozartMusicService.getQueueManager().setQueueByPlaylistId(playlistId, mediaId)
                 .subscribe(this::handlePlayRequest, throwable -> {
                 });
     }
 
     public void handlePlayPlaylist(String playlistId, int position) {
         Timber.d("handlePlayPlaylist() called with " + "playlistId = [" + playlistId + "], position = [" + position + "]");
-        queueManager.setQueueByPlaylistId(playlistId, position)
+        mozartMusicService.getQueueManager().setQueueByPlaylistId(playlistId, position)
                 .subscribe(this::handlePlayRequest, throwable -> {
                 });
     }
@@ -309,8 +304,8 @@ public class PlaybackManager implements Playback.Callback {
         @Override
         public void onSkipToQueueItem(long queueId) {
             Timber.d("OnSkipToQueueItem: %d", queueId);
-            queueManager.setCurrentQueueItem(queueId);
-            queueManager.updateMetadata();
+            mozartMusicService.getQueueManager().setCurrentQueueItem(queueId);
+            mozartMusicService.getQueueManager().updateMetadata();
         }
 
         @Override
@@ -340,22 +335,22 @@ public class PlaybackManager implements Playback.Callback {
         @Override
         public void onSkipToNext() {
             Timber.d("skipToNext");
-            if (queueManager.skipQueuePosition(1)) {
+            if (mozartMusicService.getQueueManager().skipQueuePosition(1)) {
                 handlePlayRequest();
             } else {
                 handleStopRequest("Cannot skip");
             }
-            queueManager.updateMetadata();
+            mozartMusicService.getQueueManager().updateMetadata();
         }
 
         @Override
         public void onSkipToPrevious() {
-            if (queueManager.skipQueuePosition(-1)) {
+            if (mozartMusicService.getQueueManager().skipQueuePosition(-1)) {
                 handlePlayRequest();
             } else {
                 handleStopRequest("Cannot skip");
             }
-            queueManager.updateMetadata();
+            mozartMusicService.getQueueManager().updateMetadata();
         }
 
         @Override

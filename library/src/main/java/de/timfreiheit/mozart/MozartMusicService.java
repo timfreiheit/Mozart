@@ -112,7 +112,7 @@ import timber.log.Timber;
  * @see <a href="README.md">README.md</a> for more details.
  */
 public abstract class MozartMusicService extends MediaBrowserServiceCompat implements
-        PlaybackManager.PlaybackServiceCallback {
+        PlaybackManager.PlaybackServiceCallback, QueueManager.MetadataUpdateListener {
 
     // Extra on MediaSession that contains the Cast device name currently connected to
     public static final String EXTRA_CONNECTED_CAST = "de.timfreiheit.mozart.CAST_NAME";
@@ -219,37 +219,14 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
 
     public PlaybackManager getPlaybackManager() {
         if (playbackManager == null) {
-            playbackManager = new PlaybackManager(getMediaProvider(), this, getQueueManager(), new LocalMediaPlayerPlayback(this));
+            playbackManager = new PlaybackManager(this);
         }
         return playbackManager;
     }
 
     public QueueManager getQueueManager() {
         if (queueManager == null) {
-            queueManager = new QueueManager(getMediaProvider(), new QueueManager.MetadataUpdateListener() {
-                @Override
-                public void onMetadataChanged(MediaMetadataCompat metadata) {
-                    mediaSession.setMetadata(metadata);
-                }
-
-                @Override
-                public void onMetadataRetrieveError() {
-                    getPlaybackManager().updatePlaybackState(
-                            getString(R.string.error_no_metadata));
-                }
-
-                @Override
-                public void onCurrentQueueIndexUpdated(int queueIndex) {
-                    getPlaybackManager().handlePlayRequest();
-                }
-
-                @Override
-                public void onQueueUpdated(String title,
-                                           List<MediaSessionCompat.QueueItem> newQueue) {
-                    mediaSession.setQueue(newQueue);
-                    mediaSession.setQueueTitle(title);
-                }
-            });
+            queueManager = new QueueManager(this);
         }
         return queueManager;
     }
@@ -425,6 +402,42 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
                 service.stopSelf();
             }
         }
+    }
+
+    /**
+     * @see QueueManager.MetadataUpdateListener#onMetadataChanged(MediaMetadataCompat)
+     */
+    @Override
+    public void onMetadataChanged(MediaMetadataCompat metadata) {
+        mediaSession.setMetadata(metadata);
+    }
+
+    /**
+     * @see QueueManager.MetadataUpdateListener#onMetadataRetrieveError()
+     */
+    @Override
+    public void onMetadataRetrieveError() {
+        getPlaybackManager().updatePlaybackState(
+                getString(R.string.error_no_metadata));
+    }
+
+    /**
+     * @see QueueManager.MetadataUpdateListener#onCurrentQueueIndexUpdated(int)
+     */
+    @Override
+    public void onCurrentQueueIndexUpdated(int queueIndex) {
+        getPlaybackManager().handlePlayRequest();
+    }
+
+
+    /**
+     * @see QueueManager.MetadataUpdateListener#onQueueUpdated(String, List)
+     */
+    @Override
+    public void onQueueUpdated(String title,
+                               List<MediaSessionCompat.QueueItem> newQueue) {
+        mediaSession.setQueue(newQueue);
+        mediaSession.setQueueTitle(title);
     }
 
     /**

@@ -43,29 +43,29 @@ public class CastPlayback extends Playback {
     private static final String PLAYLIST_ID = "PLAYLIST_ID";
 
     private final MozartMusicService service;
-    private final RemoteMediaClient mRemoteMediaClient;
+    private final RemoteMediaClient remoteMediaClient;
     private final RemoteMediaClient.Listener mRemoteMediaClientListener;
 
-    private volatile int mCurrentPosition;
+    private volatile int currentPosition;
 
     public CastPlayback(MozartMusicService service) {
         this.service = service;
         CastSession castSession = CastContext.getSharedInstance(service.getApplicationContext()).getSessionManager()
                 .getCurrentCastSession();
-        mRemoteMediaClient = castSession.getRemoteMediaClient();
+        remoteMediaClient = castSession.getRemoteMediaClient();
         mRemoteMediaClientListener = new CastMediaClientListener();
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        mRemoteMediaClient.addListener(mRemoteMediaClientListener);
+        remoteMediaClient.addListener(mRemoteMediaClientListener);
     }
 
     @Override
     public void onStop(boolean notifyListeners) {
         super.onStop(notifyListeners);
-        mRemoteMediaClient.removeListener(mRemoteMediaClientListener);
+        remoteMediaClient.removeListener(mRemoteMediaClientListener);
         setState(PlaybackStateCompat.STATE_STOPPED);
         if (notifyListeners) {
             getCallback().onPlaybackStatusChanged(getState());
@@ -75,19 +75,19 @@ public class CastPlayback extends Playback {
     @Override
     public int getCurrentStreamPosition() {
         if (!isConnected()) {
-            return mCurrentPosition;
+            return currentPosition;
         }
-        return (int) mRemoteMediaClient.getApproximateStreamPosition();
+        return (int) remoteMediaClient.getApproximateStreamPosition();
     }
 
     @Override
     public void setCurrentStreamPosition(int pos) {
-        this.mCurrentPosition = pos;
+        this.currentPosition = pos;
     }
 
     @Override
     public void updateLastKnownStreamPosition() {
-        mCurrentPosition = getCurrentStreamPosition();
+        currentPosition = getCurrentStreamPosition();
     }
 
     @Override
@@ -107,9 +107,9 @@ public class CastPlayback extends Playback {
     @Override
     public void pause() {
         try {
-            if (mRemoteMediaClient.hasMediaSession()) {
-                mRemoteMediaClient.pause();
-                mCurrentPosition = (int) mRemoteMediaClient.getApproximateStreamPosition();
+            if (remoteMediaClient.hasMediaSession()) {
+                remoteMediaClient.pause();
+                currentPosition = (int) remoteMediaClient.getApproximateStreamPosition();
             } else {
                 loadMedia(getCurrentMedia(), false);
             }
@@ -128,11 +128,11 @@ public class CastPlayback extends Playback {
             return;
         }
         try {
-            if (mRemoteMediaClient.hasMediaSession()) {
-                mRemoteMediaClient.seek(position);
-                mCurrentPosition = position;
+            if (remoteMediaClient.hasMediaSession()) {
+                remoteMediaClient.seek(position);
+                currentPosition = position;
             } else {
-                mCurrentPosition = position;
+                currentPosition = position;
                 loadMedia(getCurrentMedia(), false);
             }
         } catch (JSONException e) {
@@ -150,7 +150,7 @@ public class CastPlayback extends Playback {
 
     @Override
     public boolean isPlaying() {
-        return isConnected() && mRemoteMediaClient.isPlaying();
+        return isConnected() && remoteMediaClient.isPlaying();
     }
 
     private void loadMedia(MediaMetadataCompat item, boolean autoPlay) throws JSONException {
@@ -159,13 +159,13 @@ public class CastPlayback extends Playback {
         }
         if (!TextUtils.equals(item.getDescription().getMediaId(), getCurrentMedia().getDescription().getMediaId())) {
             setCurrentMedia(item);
-            mCurrentPosition = 0;
+            currentPosition = 0;
         }
         JSONObject customData = new JSONObject();
         customData.put(ITEM_ID, item.getDescription().getMediaId());
         customData.put(PLAYLIST_ID, service.getQueueManager().getPlaylistId());
         MediaInfo media = MediaInfoUtils.metaDataToMediaInfo(item, customData);
-        mRemoteMediaClient.load(media, autoPlay, mCurrentPosition, customData);
+        remoteMediaClient.load(media, autoPlay, currentPosition, customData);
     }
 
     private void setMetadataFromRemote() {
@@ -174,7 +174,7 @@ public class CastPlayback extends Playback {
         // This can happen when the app was either restarted/disconnected + connected, or if the
         // app joins an existing session while the Chromecast was playing a queue.
         try {
-            MediaInfo mediaInfo = mRemoteMediaClient.getMediaInfo();
+            MediaInfo mediaInfo = remoteMediaClient.getMediaInfo();
             if (mediaInfo == null) {
                 return;
             }
@@ -211,8 +211,8 @@ public class CastPlayback extends Playback {
     }
 
     private void updatePlaybackState() {
-        int status = mRemoteMediaClient.getPlayerState();
-        int idleReason = mRemoteMediaClient.getIdleReason();
+        int status = remoteMediaClient.getPlayerState();
+        int idleReason = remoteMediaClient.getIdleReason();
 
         Timber.d("onRemoteMediaPlayerStatusUpdated %d", status);
 
