@@ -33,6 +33,8 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.media.MediaRouter;
 
+import com.google.android.gms.cast.framework.CastSession;
+
 import java.lang.ref.WeakReference;
 import java.util.List;
 
@@ -189,7 +191,12 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
         return new LocalMediaPlayerPlayback(this);
     }
 
-    public Playback createCastPlayback() {
+    /**
+     * create cast playback
+     * this can be depended on the current CastSession
+     * should return null when the Service should not connect with this session
+     */
+    public Playback createCastPlayback(CastSession session) {
         return new CastPlayback(this);
     }
 
@@ -359,15 +366,15 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
      * A simple handler that stops the service if playback is not active (playing)
      */
     private static class DelayedStopHandler extends Handler {
-        private final WeakReference<MozartMusicService> mWeakReference;
+        private final WeakReference<MozartMusicService> weakReference;
 
         private DelayedStopHandler(MozartMusicService service) {
-            mWeakReference = new WeakReference<>(service);
+            weakReference = new WeakReference<>(service);
         }
 
         @Override
         public void handleMessage(Message msg) {
-            MozartMusicService service = mWeakReference.get();
+            MozartMusicService service = weakReference.get();
             if (service != null && service.playbackManager.getPlayback() != null) {
                 if (service.playbackManager.getPlayback().isPlaying()) {
                     Timber.d("Ignoring delayed stop since the media player is in use.");

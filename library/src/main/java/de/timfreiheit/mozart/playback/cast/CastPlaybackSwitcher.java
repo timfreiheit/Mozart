@@ -88,7 +88,7 @@ public class CastPlaybackSwitcher {
         @Override
         public void onSessionStarted(CastSession session, String sessionId) {
 
-            Playback playback = service.createCastPlayback();
+            Playback playback = service.createCastPlayback(session);
             if (playback == null) {
                 return;
             }
