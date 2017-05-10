@@ -12,11 +12,12 @@ import android.support.v7.widget.LinearLayoutManager;
 import de.timfreiheit.mozart.Mozart;
 import de.timfreiheit.mozart.sample.databinding.ActivityMainBinding;
 import de.timfreiheit.mozart.sample.player.MediaProvider;
+import de.timfreiheit.mozart.sample.ui.BaseActivity;
 import de.timfreiheit.mozart.utils.RxMediaController;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 
-public class PlaylistActivity extends AppCompatActivity {
+public class PlaylistActivity extends BaseActivity {
 
     private static final String EXTRA_PLAYLIST = "EXTRA_PLAYLIST";
 

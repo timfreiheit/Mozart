@@ -115,6 +115,7 @@ public class MediaProvider extends MozartMediaProvider {
                 .putString(MediaMetadataCompat.METADATA_KEY_TITLE, track.title)
                 .putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, track.trackNumber)
                 .putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, track.totalTrackCount)
+                .putString(MozartMediaMetadata.META_DATA_CONTENT_TYPE, "audio/mp3")
                 .build();
     }
 

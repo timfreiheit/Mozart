@@ -211,10 +211,7 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
                 transportControls.stop();
                 break;
             case ACTION_STOP_CASTING:
-                Intent i = new Intent(context, MozartMusicService.class);
-                i.setAction(MozartMusicService.ACTION_CMD);
-                i.putExtra(MozartMusicService.CMD_NAME, MozartMusicService.CMD_STOP_CASTING);
-                service.startService(i);
+                service.startService(MozartServiceActions.stopCasting(context));
                 break;
             default:
                 Timber.w("Unknown intent ignored. Action %s", action);
@@ -334,7 +331,7 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
         }
 
         if (controller != null && controller.getExtras() != null) {
-            String castName = controller.getExtras().getString(MozartMusicService.EXTRA_CONNECTED_CAST);
+            String castName = controller.getExtras().getString(CastPlaybackSwitcher.EXTRA_CONNECTED_CAST);
             if (castName != null) {
                 String castInfo = service.getResources()
                         .getString(R.string.casting_to_device, castName);

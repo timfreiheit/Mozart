@@ -22,6 +22,10 @@
 
         <activity android:name=".ui.playlist.PlaylistActivity"/>
 
+        <meta-data
+            android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
+            android:value="de.timfreiheit.mozart.sample.CastOptionsProvider" />
+
         <service
             android:name=".player.MusicService"
             android:exported="false">
@@ -29,7 +33,6 @@
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
-
     </application>
 
 </manifest>

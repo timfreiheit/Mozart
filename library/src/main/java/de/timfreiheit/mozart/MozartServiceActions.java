@@ -38,6 +38,13 @@ public class MozartServiceActions {
         return intent;
     }
 
+    public static Intent stopCasting(Context context) {
+        Intent intent = new Intent(context, getMusicService(context));
+        intent.setAction(MozartMusicService.ACTION_CMD);
+        intent.putExtra(MozartMusicService.CMD_NAME, MozartMusicService.CMD_STOP_CASTING);
+        return intent;
+    }
+
     public static Intent playMedia(Context context, String mediaId) {
         return playMedia(context, mediaId, null);
     }

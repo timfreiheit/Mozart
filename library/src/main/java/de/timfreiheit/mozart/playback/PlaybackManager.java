@@ -25,6 +25,7 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 
 import de.timfreiheit.mozart.MozartMusicService;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableSingleObserver;
 import io.reactivex.schedulers.Schedulers;
@@ -73,6 +74,7 @@ public class PlaybackManager implements Playback.Callback {
         getDataDisposable.clear();
         getDataDisposable.add(mozartMusicService.getMediaProvider().getMediaById(mediaId)
                 .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(new DisposableSingleObserver<MediaMetadataCompat>() {
                     @Override
                     public void onSuccess(MediaMetadataCompat mediaMetadata) {
@@ -215,6 +217,7 @@ public class PlaybackManager implements Playback.Callback {
         if (playback == null) {
             throw new IllegalArgumentException("Playback cannot be null");
         }
+        Timber.d("switchToPlayback(%s)", playback);
         // suspend the current one.
         int oldState = this.playback.getState();
         int pos = this.playback.getCurrentStreamPosition();

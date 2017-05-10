@@ -21,6 +21,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.session.MediaSession;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -114,8 +115,6 @@ import timber.log.Timber;
 public abstract class MozartMusicService extends MediaBrowserServiceCompat implements
         PlaybackManager.PlaybackServiceCallback, QueueManager.MetadataUpdateListener {
 
-    // Extra on MediaSession that contains the Cast device name currently connected to
-    public static final String EXTRA_CONNECTED_CAST = "de.timfreiheit.mozart.CAST_NAME";
     // The action of the incoming Intent indicating that it contains a command
     // to be executed (see {@link #onStartCommand})
     public static final String ACTION_CMD = "de.timfreiheit.mozart.ACTION_CMD";
@@ -141,11 +140,11 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
     private final DelayedStopHandler delayedStopHandler = new DelayedStopHandler(this);
     private MediaRouter mediaRouter;
 
-    private SessionManager castSessionManager;
-    private SessionManagerListener<CastSession> castSessionManagerListener;
-
     private boolean isConnectedToCar;
     private BroadcastReceiver carConnectionReceiver;
+
+
+    private CastPlaybackSwitcher castPlaybackSwitcher;
 
     /*
      * (non-Javadoc)
@@ -178,20 +177,8 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
 
         playbackManager.updatePlaybackState(null);
 
-        int playServicesAvailable =
-                GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
-
-        if (!TvHelper.isTvUiMode(this) && playServicesAvailable == ConnectionResult.SUCCESS) {
-            try {
-                castSessionManager = CastContext.getSharedInstance(this).getSessionManager();
-                castSessionManagerListener = new CastSessionManagerListener();
-                castSessionManager.addSessionManagerListener(castSessionManagerListener,
-                        CastSession.class);
-            } catch (Exception e) {
-                Timber.w("Cast is not configured");
-                castSessionManager = null;
-            }
-        }
+        castPlaybackSwitcher = new CastPlaybackSwitcher(this);
+        castPlaybackSwitcher.onCreate();
 
         mediaRouter = MediaRouter.getInstance(getApplicationContext());
 
@@ -278,7 +265,7 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
                 }
                 break;
             case CMD_STOP_CASTING:
-                CastContext.getSharedInstance(this).getSessionManager().endCurrentSession(true);
+                castPlaybackSwitcher.stopCasting();
                 break;
         }
     }
@@ -302,10 +289,7 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
         playbackManager.handleStopRequest(null);
         getMediaNotificationManager().stopNotification();
 
-        if (castSessionManager != null) {
-            castSessionManager.removeSessionManagerListener(castSessionManagerListener,
-                    CastSession.class);
-        }
+        castPlaybackSwitcher.onDestroy();
 
         delayedStopHandler.removeCallbacksAndMessages(null);
         mediaSession.release();
@@ -440,73 +424,20 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
         mediaSession.setQueueTitle(title);
     }
 
-    /**
-     * Session Manager Listener responsible for switching the Playback instances
-     * depending on whether it is connected to a remote player.
-     */
-    private class CastSessionManagerListener implements SessionManagerListener<CastSession> {
+    public MediaSessionCompat getMediaSession() {
+        return mediaSession;
+    }
 
-        @Override
-        public void onSessionEnded(CastSession session, int error) {
-            Timber.d("onSessionEnded");
-            if (!sessionExtras.containsKey(EXTRA_CONNECTED_CAST)) {
-                // we are not casting at the moment
-                return;
-            }
-            sessionExtras.remove(EXTRA_CONNECTED_CAST);
-            mediaSession.setExtras(sessionExtras);
-            Playback playback = createLocalPlayback();
-            mediaRouter.setMediaSessionCompat(null);
-            playbackManager.switchToPlayback(playback, false);
-        }
+    public Bundle getSessionExtras() {
+        return sessionExtras;
+    }
 
-        @Override
-        public void onSessionResumed(CastSession session, boolean wasSuspended) {
-        }
+    public void setSessionExtras(Bundle bundle) {
+        sessionExtras.putAll(bundle);
+        mediaSession.setExtras(sessionExtras);
+    }
 
-        @Override
-        public void onSessionStarted(CastSession session, String sessionId) {
-
-            Playback playback = createCastPlayback();
-            if (playback == null) {
-                return;
-            }
-
-            // In case we are casting, send the device name as an extra on MediaSession metadata.
-            sessionExtras.putString(EXTRA_CONNECTED_CAST,
-                    session.getCastDevice().getFriendlyName());
-            mediaSession.setExtras(sessionExtras);
-            mediaRouter.setMediaSessionCompat(mediaSession);
-            playbackManager.switchToPlayback(playback, true);
-        }
-
-        @Override
-        public void onSessionStarting(CastSession session) {
-        }
-
-        @Override
-        public void onSessionStartFailed(CastSession session, int error) {
-        }
-
-        @Override
-        public void onSessionEnding(CastSession session) {
-            // This is our final chance to update the underlying stream position
-            // In onSessionEnded(), the underlying CastPlayback#mRemoteMediaClient
-            // is disconnected and hence we update our local value of stream position
-            // to the latest position.
-            playbackManager.getPlayback().updateLastKnownStreamPosition();
-        }
-
-        @Override
-        public void onSessionResuming(CastSession session, String sessionId) {
-        }
-
-        @Override
-        public void onSessionResumeFailed(CastSession session, int error) {
-        }
-
-        @Override
-        public void onSessionSuspended(CastSession session, int reason) {
-        }
+    public MediaRouter getMediaRouter() {
+        return mediaRouter;
     }
 }

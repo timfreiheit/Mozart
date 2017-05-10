@@ -31,6 +31,7 @@ import org.json.JSONObject;
 import de.timfreiheit.mozart.MozartMusicService;
 import de.timfreiheit.mozart.playback.Playback;
 import io.reactivex.Completable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
@@ -201,6 +202,7 @@ public class CastPlayback extends Playback {
                                     // the remoteMedia should be skipped in queue
                                     service.getQueueManager().skipQueuePosition(1);
                                 })))
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(this::updateLastKnownStreamPosition, throwable -> {
                         });
             }
@@ -262,18 +264,22 @@ public class CastPlayback extends Playback {
 
         @Override
         public void onSendingRemoteMediaRequest() {
+            Timber.d("RemoteMediaClient.onSendingRemoteMediaRequest");
         }
 
         @Override
         public void onAdBreakStatusUpdated() {
+            Timber.d("RemoteMediaClient.onAdBreakStatusUpdated");
         }
 
         @Override
         public void onQueueStatusUpdated() {
+            Timber.d("RemoteMediaClient.onQueueStatusUpdated");
         }
 
         @Override
         public void onPreloadStatusUpdated() {
+            Timber.d("RemoteMediaClient.onPreloadStatusUpdated");
         }
     }
 }

@@ -7,11 +7,12 @@ import android.support.v7.widget.LinearLayoutManager;
 
 import de.timfreiheit.mozart.sample.databinding.ActivityMainBinding;
 import de.timfreiheit.mozart.sample.player.MediaProvider;
+import de.timfreiheit.mozart.sample.ui.BaseActivity;
 import de.timfreiheit.mozart.sample.ui.playlist.PlaylistActivity;
 import io.reactivex.Observable;
 import io.reactivex.observables.GroupedObservable;
 
-public class PlaylistBrowserActivity extends AppCompatActivity {
+public class PlaylistBrowserActivity extends BaseActivity {
 
     private PlaylistBrowserAdapter adapter;
 
