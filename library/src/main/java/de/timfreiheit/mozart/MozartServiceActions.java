@@ -31,6 +31,11 @@ public class MozartServiceActions {
         return cls;
     }
 
+    public static Intent startIdle(Context context) {
+        return new Intent(context, getMusicService(context));
+    }
+
+
     public static Intent pause(Context context) {
         Intent intent = new Intent(context, getMusicService(context));
         intent.setAction(MozartMusicService.ACTION_CMD);

@@ -36,9 +36,7 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.NotificationCompat;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import de.timfreiheit.mozart.playback.cast.CastPlaybackSwitcher;
 import de.timfreiheit.mozart.ui.OpenAppShadowActivity;
 import de.timfreiheit.mozart.utils.ResourceHelper;
 import io.reactivex.android.schedulers.AndroidSchedulers;

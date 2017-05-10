@@ -1,4 +1,4 @@
-package de.timfreiheit.mozart;
+package de.timfreiheit.mozart.playback.cast;
 
 import android.os.Bundle;
 
@@ -9,6 +9,7 @@ import com.google.android.gms.cast.framework.SessionManagerListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
+import de.timfreiheit.mozart.MozartMusicService;
 import de.timfreiheit.mozart.playback.Playback;
 import de.timfreiheit.mozart.utils.TvHelper;
 import timber.log.Timber;
@@ -35,8 +36,11 @@ public class CastPlaybackSwitcher {
                 castSessionManagerListener = new CastSessionManagerListener();
                 castSessionManager.addSessionManagerListener(castSessionManagerListener,
                         CastSession.class);
+                if (castSessionManager.getCurrentCastSession() != null) {
+                    castSessionManagerListener.onSessionStarted(castSessionManager.getCurrentCastSession(), castSessionManager.getCurrentCastSession().toString());
+                }
             } catch (Exception e) {
-                Timber.w("Cast is not configured");
+                Timber.w(e, "Cast is not configured");
                 castSessionManager = null;
             }
         }

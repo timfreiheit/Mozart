@@ -158,7 +158,7 @@ public class CastPlayback extends Playback {
         if (item == null) {
             return;
         }
-        if (!TextUtils.equals(item.getDescription().getMediaId(), getCurrentMedia().getDescription().getMediaId())) {
+        if (getCurrentMedia() == null || !TextUtils.equals(item.getDescription().getMediaId(), getCurrentMedia().getDescription().getMediaId())) {
             setCurrentMedia(item);
             currentPosition = 0;
         }

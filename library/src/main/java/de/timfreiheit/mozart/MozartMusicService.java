@@ -21,7 +21,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.session.MediaSession;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -34,13 +33,6 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.media.MediaRouter;
 
-import com.google.android.gms.cast.framework.CastContext;
-import com.google.android.gms.cast.framework.CastSession;
-import com.google.android.gms.cast.framework.SessionManager;
-import com.google.android.gms.cast.framework.SessionManagerListener;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-
 import java.lang.ref.WeakReference;
 import java.util.List;
 
@@ -51,9 +43,9 @@ import de.timfreiheit.mozart.playback.Playback;
 import de.timfreiheit.mozart.playback.PlaybackManager;
 import de.timfreiheit.mozart.playback.QueueManager;
 import de.timfreiheit.mozart.playback.cast.CastPlayback;
+import de.timfreiheit.mozart.playback.cast.CastPlaybackSwitcher;
 import de.timfreiheit.mozart.ui.OpenAppShadowActivity;
 import de.timfreiheit.mozart.utils.CarHelper;
-import de.timfreiheit.mozart.utils.TvHelper;
 import de.timfreiheit.mozart.utils.WearHelper;
 import timber.log.Timber;
 
@@ -155,7 +147,6 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
         super.onCreate();
         Timber.d("onCreate");
 
-
         // Start a new MediaSession
         mediaSession = new MediaSessionCompat(this, "MusicService");
         setSessionToken(mediaSession.getSessionToken());
@@ -179,8 +170,6 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
 
         castPlaybackSwitcher = new CastPlaybackSwitcher(this);
         castPlaybackSwitcher.onCreate();
-
-        mediaRouter = MediaRouter.getInstance(getApplicationContext());
 
         registerCarConnectionReceiver();
     }
@@ -293,6 +282,8 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
 
         delayedStopHandler.removeCallbacksAndMessages(null);
         mediaSession.release();
+
+        Mozart.get(this).setMediaSessionToken(null);
     }
 
     @Override
@@ -438,6 +429,9 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
     }
 
     public MediaRouter getMediaRouter() {
+        if (mediaRouter == null) {
+            mediaRouter = MediaRouter.getInstance(getApplicationContext());
+        }
         return mediaRouter;
     }
 }
