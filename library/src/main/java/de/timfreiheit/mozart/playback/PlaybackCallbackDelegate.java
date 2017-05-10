@@ -2,11 +2,11 @@ package de.timfreiheit.mozart.playback;
 
 import android.support.v4.media.session.PlaybackStateCompat;
 
-public class PlaybackCallbackDegelate implements Playback.Callback {
+public class PlaybackCallbackDelegate implements Playback.Callback {
 
     private Playback.Callback delegate;
 
-    public PlaybackCallbackDegelate(Playback.Callback callback) {
+    public PlaybackCallbackDelegate(Playback.Callback callback) {
         setDelegate(callback);
     }
 
