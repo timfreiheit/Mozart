@@ -15,7 +15,7 @@ import java.lang.annotation.RetentionPolicy;
 
 import de.timfreiheit.mozart.MozartServiceActions;
 import de.timfreiheit.mozart.playback.Playback;
-import de.timfreiheit.mozart.playback.PlaybackCallbackDegelate;
+import de.timfreiheit.mozart.playback.PlaybackCallbackDelegate;
 import timber.log.Timber;
 
 import static android.support.v4.media.session.PlaybackStateCompat.STATE_BUFFERING;
@@ -93,7 +93,7 @@ public abstract class LocalPlayback extends Playback implements AudioManager.OnA
 
     @Override
     public void setCallback(Callback callback) {
-        super.setCallback(new PlaybackCallbackDegelate(callback) {
+        super.setCallback(new PlaybackCallbackDelegate(callback) {
             @Override
             public void onPlaybackStatusChanged(@PlaybackStateCompat.State int state) {
                 super.onPlaybackStatusChanged(state);
