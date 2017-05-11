@@ -262,6 +262,7 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
                 break;
             case CMD_STOP_CASTING:
                 castPlaybackSwitcher.stopCasting();
+                onPlaybackStop();
                 break;
         }
     }
