@@ -4,12 +4,15 @@ import android.graphics.Bitmap;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.RatingCompat;
 
+import com.google.android.gms.cast.MediaInfo;
+
 public class MozartMetadataBuilder {
 
     private MediaMetadataCompat.Builder mediaMetadata = new MediaMetadataCompat.Builder();
 
     public MozartMetadataBuilder() {
         contentType("audio/mp3");
+        streamType(MediaInfo.STREAM_TYPE_BUFFERED);
     }
 
     /**
@@ -154,8 +157,17 @@ public class MozartMetadataBuilder {
     }
 
     public MozartMetadataBuilder contentUri(String value) {
-        mediaMetadata.putString(MozartMediaMetadata.META_DATA_CONTENT_URI, value);
-        return this;
+        return putString(MozartMediaMetadata.META_DATA_CONTENT_URI, value);
+    }
+
+    /**
+     * @see MediaInfo#STREAM_TYPE_BUFFERED
+     * @see MediaInfo#STREAM_TYPE_LIVE
+     * @see MediaInfo#STREAM_TYPE_NONE
+     * @see MediaInfo#STREAM_TYPE_INVALID
+     */
+    public MozartMetadataBuilder streamType(int value) {
+        return putLong(MozartMediaMetadata.META_DATA_STREAM_TYPE, value);
     }
 
     /**

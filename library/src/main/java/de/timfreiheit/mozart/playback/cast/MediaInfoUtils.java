@@ -40,16 +40,18 @@ public class MediaInfoUtils {
                 new Uri.Builder().encodedPath(
                         track.getString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI))
                         .build());
+
         // First image is used by the receiver for showing the audio album art.
         mediaMetadata.addImage(image);
         // Second image is used by Cast Companion Library on the full screen activity that is shown
         // when the cast dialog is clicked.
         mediaMetadata.addImage(image);
 
-        //noinspection ResourceType
+        int streamType = MozartMediaMetadata.getStreamType(track);
+
         return new MediaInfo.Builder(MozartMediaMetadata.getContentUri(track))
                 .setContentType(MozartMediaMetadata.getContentType(track))
-                .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
+                .setStreamType(streamType)
                 .setMetadata(mediaMetadata)
                 .setCustomData(customData)
                 .build();

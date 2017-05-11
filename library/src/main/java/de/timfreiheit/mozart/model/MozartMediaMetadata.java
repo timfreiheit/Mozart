@@ -5,6 +5,7 @@ import android.support.v4.media.MediaMetadataCompat;
 public class MozartMediaMetadata {
 
     public static final String META_DATA_CONTENT_URI = "de.timfreiheit.mozart.metadata.CONTENT_URI";
+    public static final String META_DATA_STREAM_TYPE = "de.timfreiheit.mozart.metadata.STREAM_TYPE";
 
     public static final String META_DATA_CONTENT_TYPE = "de.timfreiheit.mozart.metadata.CONTENT_TYPE";
 
@@ -24,11 +25,17 @@ public class MozartMediaMetadata {
         return mediaMetadata.getString(META_DATA_PLAYLIST);
     }
 
-
     /**
      * @see #META_DATA_CONTENT_TYPE
      */
     public static String getContentType(MediaMetadataCompat mediaMetadata) {
         return mediaMetadata.getString(META_DATA_CONTENT_TYPE);
+    }
+
+    /**
+     * @see #META_DATA_CONTENT_TYPE
+     */
+    public static int getStreamType(MediaMetadataCompat mediaMetadata) {
+        return (int) mediaMetadata.getLong(META_DATA_STREAM_TYPE);
     }
 }
