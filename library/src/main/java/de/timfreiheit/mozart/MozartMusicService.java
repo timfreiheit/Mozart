@@ -40,7 +40,7 @@ import java.util.List;
 
 import de.timfreiheit.mozart.model.MozartMediaImageLoader;
 import de.timfreiheit.mozart.model.MozartMediaProvider;
-import de.timfreiheit.mozart.playback.LocalMediaPlayerPlayback;
+import de.timfreiheit.mozart.playback.local.LocalMediaPlayerPlayback;
 import de.timfreiheit.mozart.playback.Playback;
 import de.timfreiheit.mozart.playback.PlaybackManager;
 import de.timfreiheit.mozart.playback.QueueManager;

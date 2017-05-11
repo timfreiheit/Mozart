@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.timfreiheit.mozart.playback;
+package de.timfreiheit.mozart.playback.local;
 
 import android.content.Context;
 import android.media.AudioManager;
