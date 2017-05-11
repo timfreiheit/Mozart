@@ -10,6 +10,7 @@ import java.util.List;
 
 import de.timfreiheit.mozart.model.MozartMediaMetadata;
 import de.timfreiheit.mozart.model.MozartMediaProvider;
+import de.timfreiheit.mozart.model.MozartMetadataBuilder;
 import de.timfreiheit.mozart.model.Playlist;
 import de.timfreiheit.mozart.sample.App;
 import de.timfreiheit.mozart.sample.model.MusicData;
@@ -104,18 +105,18 @@ public class MediaProvider extends MozartMediaProvider {
     }
 
     private static MediaMetadataCompat metadataFromTrack(Track track) {
-        return new MediaMetadataCompat.Builder()
-                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, track.id)
-                .putString(MozartMediaMetadata.META_DATA_CONTENT_URI, track.source)
-                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, track.album)
-                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, track.artist)
-                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, track.duration)
-                .putString(MediaMetadataCompat.METADATA_KEY_GENRE, track.genre)
-                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, track.image)
-                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, track.title)
-                .putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, track.trackNumber)
-                .putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, track.totalTrackCount)
-                .putString(MozartMediaMetadata.META_DATA_CONTENT_TYPE, "audio/mp3")
+        return new MozartMetadataBuilder()
+                .mediaId(track.id)
+                .contentUri(track.source)
+                .artist(track.artist)
+                .album(track.album)
+                .duration(track.duration)
+                .genre(track.genre)
+                .albumArtUri(track.image)
+                .title(track.title)
+                .trackNumber(track.trackNumber)
+                .totalTrackCount(track.totalTrackCount)
+                .contentType("audio/mp3")
                 .build();
     }
 

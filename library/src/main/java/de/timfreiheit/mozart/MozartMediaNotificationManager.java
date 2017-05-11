@@ -342,7 +342,6 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
                         if (metadata != null && metadata.getDescription().getIconUri() != null &&
                                 metadata.getDescription().getIconUri().toString().equals(finalFetchArtUrl)) {
                             // If the media is still the same, update the notification:
-                            Timber.d("fetchBitmapFromURLAsync: set bitmap to %s", finalFetchArtUrl);
                             if (coverImage.largeImage() != null) {
                                 notificationBuilder.setLargeIcon(coverImage.largeImage());
                                 notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
