@@ -73,7 +73,12 @@ public class PlaylistActivity extends BaseActivity {
                 .observeOn(AndroidSchedulers.mainThread())
                 .flatMap(RxMediaController::playbackState)
                 .subscribe(playbackState -> {
-                    adapter.setCurrentMedia(Mozart.get(this).getMediaController().getMetadata(), playbackState);
+                    MediaControllerCompat mediaController = Mozart.get(this).getMediaController();
+                    if (mediaController == null) {
+                        adapter.setCurrentMedia(null, null);
+                    } else {
+                        adapter.setCurrentMedia(mediaController.getMetadata(), playbackState);
+                    }
                 }, Throwable::printStackTrace));
     }
 

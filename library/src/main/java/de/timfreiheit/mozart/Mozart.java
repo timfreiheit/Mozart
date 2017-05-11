@@ -55,7 +55,7 @@ public class Mozart {
     }
 
     public void setMediaSessionToken(MediaSessionCompat.Token token) {
-        mediaSessionSubject.onNext(Optional.of(token));
+        mediaSessionSubject.onNext(Optional.ofNullable(token));
     }
 
     @Nullable
