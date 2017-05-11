@@ -22,7 +22,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.RemoteException;
@@ -36,6 +35,7 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.NotificationCompat;
 
+import de.timfreiheit.mozart.model.image.CoverImage;
 import de.timfreiheit.mozart.playback.cast.CastPlaybackSwitcher;
 import de.timfreiheit.mozart.ui.OpenAppShadowActivity;
 import de.timfreiheit.mozart.utils.ResourceHelper;
@@ -81,9 +81,6 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
     private final int notificationColor;
 
     private boolean started = false;
-
-    private String lastCoverImageUrl;
-    private Bitmap lastCoverImage;
 
     public MozartMediaNotificationManager(MozartMusicService service) throws RemoteException {
         this.service = service;
@@ -296,21 +293,17 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
         MediaDescriptionCompat description = metadata.getDescription();
 
         String fetchArtUrl = null;
-        Bitmap art = null;
+        CoverImage art = null;
         if (description.getIconUri() != null) {
             // This sample assumes the iconUri will be a valid URL formatted String, but
             // it can actually be any valid Android Uri formatted String.
             // async fetch the album art icon
             String artUrl = description.getIconUri().toString();
-            if (artUrl != null && artUrl.equals(lastCoverImageUrl)) {
-                art = lastCoverImage;
-            } else {
-                art = service.getImageLoader().getCachedBitmapFromMemory(artUrl);
-            }
+            art = service.getImageLoaderCache().getCachedBitmapFromMemory(artUrl);
             if (art == null) {
                 fetchArtUrl = artUrl;
                 // use a placeholder art while the remote art is being downloaded
-                art = getDetailCover();
+                art = getDefaultCover();
             }
         }
 
@@ -324,8 +317,8 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
                 .setContentTitle(description.getTitle())
                 .setContentText(description.getSubtitle());
 
-        if (art != null) {
-            notificationBuilder.setLargeIcon(art);
+        if (art != null && art.largeImage() != null) {
+            notificationBuilder.setLargeIcon(art.largeImage());
         }
 
         if (controller != null && controller.getExtras() != null) {
@@ -342,19 +335,18 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
         setNotificationPlaybackState(notificationBuilder);
         if (fetchArtUrl != null) {
             String finalFetchArtUrl = fetchArtUrl;
-            service.getImageLoader().loadCover(fetchArtUrl)
+            service.getImageLoaderCache().loadCover(fetchArtUrl)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(bitmap -> {
+                    .subscribe(coverImage -> {
                         if (metadata != null && metadata.getDescription().getIconUri() != null &&
                                 metadata.getDescription().getIconUri().toString().equals(finalFetchArtUrl)) {
-                            lastCoverImage = bitmap;
-                            lastCoverImageUrl = finalFetchArtUrl;
-
                             // If the media is still the same, update the notification:
                             Timber.d("fetchBitmapFromURLAsync: set bitmap to %s", finalFetchArtUrl);
-                            notificationBuilder.setLargeIcon(bitmap);
-                            notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
+                            if (coverImage.largeImage() != null) {
+                                notificationBuilder.setLargeIcon(coverImage.largeImage());
+                                notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
+                            }
                         }
                     }, throwable -> {
                         Timber.d(throwable, "error fetchBitmapFromURLAsync: set bitmap to %s", finalFetchArtUrl);
@@ -366,16 +358,16 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
 
     protected abstract int getNotificationIcon();
 
-    protected Bitmap getDetailCover() {
-        return BitmapFactory.decodeResource(service.getResources(), R.drawable.ic_default_art);
+    protected CoverImage getDefaultCover() {
+        return CoverImage.create(BitmapFactory.decodeResource(service.getResources(), R.drawable.ic_default_art), null);
     }
 
     protected NotificationCompat.MediaStyle createMediaStyle(int availableActions) {
 
-        if(availableActions < 0) {
+        if (availableActions < 0) {
             availableActions = 0;
         }
-        if (availableActions > 3){
+        if (availableActions > 3) {
             availableActions = 3;
         }
 

@@ -4,7 +4,7 @@ import android.os.RemoteException;
 
 import de.timfreiheit.mozart.MozartMediaNotificationManager;
 import de.timfreiheit.mozart.MozartMusicService;
-import de.timfreiheit.mozart.model.MozartMediaImageLoader;
+import de.timfreiheit.mozart.model.image.MozartMediaImageLoader;
 import de.timfreiheit.mozart.model.MozartMediaProvider;
 import de.timfreiheit.mozart.sample.ImageLoader;
 

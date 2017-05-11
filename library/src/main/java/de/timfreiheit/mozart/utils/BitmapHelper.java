@@ -7,15 +7,6 @@ import java.io.InputStream;
 
 public class BitmapHelper {
 
-    public static final int MAX_ART_WIDTH_PX = 800;
-    public static final int MAX_ART_HEIGHT_PX = 480;
-
-    public static final int MAX_ART_WIDTH_ICON_PX = 128;
-    public static final int MAX_ART_HEIGHT_ICON_PX = 128;
-
-    // Max read limit that we allow our input stream to mark/reset.
-    private static final int MAX_READ_LIMIT_PER_IMG = 1024 * 1024;
-
     public static Bitmap scaleBitmap(Bitmap src, int maxWidth, int maxHeight) {
         double scaleFactor = Math.min(
                 ((double) maxWidth) / src.getWidth(), ((double) maxHeight) / src.getHeight());

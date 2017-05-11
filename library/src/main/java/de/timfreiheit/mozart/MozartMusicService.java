@@ -38,7 +38,8 @@ import com.google.android.gms.cast.framework.CastSession;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-import de.timfreiheit.mozart.model.MozartMediaImageLoader;
+import de.timfreiheit.mozart.model.image.MozartImageLoaderCache;
+import de.timfreiheit.mozart.model.image.MozartMediaImageLoader;
 import de.timfreiheit.mozart.model.MozartMediaProvider;
 import de.timfreiheit.mozart.playback.local.LocalMediaPlayerPlayback;
 import de.timfreiheit.mozart.playback.Playback;
@@ -128,6 +129,7 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
 
     private QueueManager queueManager;
     private PlaybackManager playbackManager;
+    private MozartImageLoaderCache imageLoaderCache;
 
     private MediaSessionCompat mediaSession;
     private Bundle sessionExtras;
@@ -186,6 +188,13 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
     public abstract MozartMediaNotificationManager getMediaNotificationManager();
 
     public abstract MozartMediaImageLoader getImageLoader();
+
+    public MozartImageLoaderCache getImageLoaderCache() {
+        if (imageLoaderCache == null){
+            imageLoaderCache = new MozartImageLoaderCache(getImageLoader());
+        }
+        return imageLoaderCache;
+    }
 
     public Playback createLocalPlayback() {
         return new LocalMediaPlayerPlayback(this);
@@ -441,5 +450,11 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
             mediaRouter = MediaRouter.getInstance(getApplicationContext());
         }
         return mediaRouter;
+    }
+
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        getImageLoaderCache().onTrimMemory(level);
     }
 }

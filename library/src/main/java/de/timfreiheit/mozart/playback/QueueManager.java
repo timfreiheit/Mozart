@@ -16,8 +16,8 @@
 
 package de.timfreiheit.mozart.playback;
 
-import android.graphics.Bitmap;
 import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 
@@ -28,10 +28,11 @@ import java.util.List;
 import de.timfreiheit.mozart.MozartMusicService;
 import de.timfreiheit.mozart.model.MozartMediaMetadata;
 import de.timfreiheit.mozart.model.Playlist;
-import de.timfreiheit.mozart.utils.BitmapHelper;
+import de.timfreiheit.mozart.model.image.CoverImage;
 import de.timfreiheit.mozart.utils.QueueHelper;
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
@@ -200,48 +201,58 @@ public class QueueManager {
                     metadata = new MediaMetadataCompat.Builder(metadata)
                             .putString(MozartMediaMetadata.META_DATA_PLAYLIST, playlist.getId())
                             .build();
+                    metadata = fetchMediaImages(metadata);
+
                     listener.onMetadataChanged(metadata);
-                    fetchMediaImages(metadata);
 
                 }, throwable -> {
                     throw new IllegalArgumentException("Invalid musicId " + currentMusic.getDescription().getMediaId());
                 }));
     }
 
-    protected void fetchMediaImages(MediaMetadataCompat metadata) {
+    protected MediaMetadataCompat fetchMediaImages(MediaMetadataCompat metadata) {
 
         Uri iconUri = metadata.getDescription().getIconUri();
         if (iconUri == null) {
-            return;
+            return metadata;
         }
 
-        newMediaCompositeDisposable.add(mozartMusicService.getImageLoader().loadCover(iconUri.toString())
+        CoverImage cachedCoverImage = mozartMusicService.getImageLoaderCache().getCachedBitmapFromMemory(iconUri.toString());
+        if (cachedCoverImage != null) {
+            return fillWithCoverImage(metadata, cachedCoverImage);
+        }
+
+        newMediaCompositeDisposable.add(mozartMusicService.getImageLoaderCache().loadCover(iconUri.toString())
                 .subscribeOn(Schedulers.io())
-                .subscribe(bitmap -> {
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(coverImage -> {
 
                     String mediaId = metadata.getDescription().getMediaId();
                     if (mediaId != null && !mediaId.equals(getCurrentMusic().getDescription().getMediaId())) {
                         return;
                     }
 
-                    Bitmap icon = BitmapHelper.scaleBitmap(bitmap,
-                            BitmapHelper.MAX_ART_WIDTH_ICON_PX, BitmapHelper.MAX_ART_HEIGHT_ICON_PX);
-
-                    MediaMetadataCompat newMetadata = new MediaMetadataCompat.Builder(metadata)
-
-                            // set high resolution bitmap in METADATA_KEY_ALBUM_ART. This is used, for
-                            // example, on the lockscreen background when the media session is active.
-                            .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, bitmap)
-
-                            // set small version of the album art in the DISPLAY_ICON. This is used on
-                            // the MediaDescription and thus it should be small to be serialized if
-                            // necessary
-                            .putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, icon)
-                            .build();
+                    MediaMetadataCompat newMetadata = fillWithCoverImage(metadata, coverImage);
                     listener.onMetadataChanged(newMetadata);
                 }, throwable -> Timber.w(throwable, "loading cover failed")));
+        return metadata;
+    }
 
+    private static MediaMetadataCompat fillWithCoverImage(MediaMetadataCompat metadata, @Nullable CoverImage coverImage) {
+        if (coverImage == null) {
+            return metadata;
+        }
+        MediaMetadataCompat.Builder newMetadata = new MediaMetadataCompat.Builder(metadata);
 
+        if (coverImage.largeImage() != null) {
+            newMetadata.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, coverImage.largeImage());
+        }
+
+        if (coverImage.icon() != null) {
+            newMetadata.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, coverImage.icon());
+        }
+
+        return newMetadata.build();
     }
 
     public String getPlaylistId() {
