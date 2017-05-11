@@ -397,11 +397,11 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
         PendingIntent intent;
         if (playbackState.getState() == PlaybackStateCompat.STATE_PLAYING) {
             label = service.getString(R.string.label_pause);
-            icon = R.drawable.uamp_ic_pause_white_24dp;
+            icon = R.drawable.ic_pause_white_24dp;
             intent = pauseIntent;
         } else {
             label = service.getString(R.string.label_play);
-            icon = R.drawable.uamp_ic_play_arrow_white_24dp;
+            icon = R.drawable.ic_play_arrow_white_24dp;
             intent = playIntent;
         }
         builder.addAction(new NotificationCompat.Action(icon, label, intent));
