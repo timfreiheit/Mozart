@@ -33,7 +33,7 @@ public class CastOptionsProvider implements OptionsProvider {
     @Override
     public CastOptions getCastOptions(Context context) {
         return new CastOptions.Builder()
-                .setReceiverApplicationId("CC1AD845")
+                .setReceiverApplicationId(CastMediaControlIntent.DEFAULT_MEDIA_RECEIVER_APPLICATION_ID)
                 .build();
     }
 
