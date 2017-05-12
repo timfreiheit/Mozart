@@ -320,7 +320,8 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
                 .setUsesChronometer(true)
                 .setContentIntent(createContentIntent(description))
                 .setContentTitle(description.getTitle())
-                .setContentText(description.getSubtitle());
+                .setContentText(description.getSubtitle())
+                .setDeleteIntent(stopIntent);
 
         if (art != null && art.largeImage() != null) {
             notificationBuilder.setLargeIcon(art.largeImage());
