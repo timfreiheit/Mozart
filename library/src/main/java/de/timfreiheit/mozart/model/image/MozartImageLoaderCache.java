@@ -34,8 +34,7 @@ public class MozartImageLoaderCache {
         cache = new LruCache<String, CoverImage>(cacheSize) {
             @Override
             protected int sizeOf(String key, CoverImage value) {
-                return value.largeImage().getByteCount()
-                        + value.icon().getByteCount();
+                return value.byteCount();
             }
         };
     }
