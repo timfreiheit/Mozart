@@ -25,6 +25,7 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 
 import de.timfreiheit.mozart.MozartMusicService;
+import de.timfreiheit.mozart.model.MozartPlaybackState;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableSingleObserver;
@@ -123,8 +124,10 @@ public class PlaybackManager implements Playback.Callback {
     public void updatePlaybackState(String error) {
         Timber.d("updatePlaybackState, playback state= %d", playback.getState());
         long position = PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN;
+        int duration = -1;
         if (playback != null && playback.isConnected()) {
             position = playback.getCurrentStreamPosition();
+            duration = playback.getStreamDuration();
         }
 
         PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder()
@@ -140,6 +143,11 @@ public class PlaybackManager implements Playback.Callback {
             stateBuilder.setErrorMessage(error);
             state = PlaybackStateCompat.STATE_ERROR;
         }
+
+        Bundle extras = new Bundle();
+        extras.putInt(MozartPlaybackState.STATE_DURATION, duration);
+        addPlaybackStateExtras(extras);
+        stateBuilder.setExtras(extras);
 
         stateBuilder.setState(state, position, 1.0f, SystemClock.elapsedRealtime());
 
@@ -157,8 +165,11 @@ public class PlaybackManager implements Playback.Callback {
         }
     }
 
-    protected void setCustomAction(PlaybackStateCompat.Builder stateBuilder) {
+    protected void addPlaybackStateExtras(Bundle bundle) {
 
+    }
+
+    protected void setCustomAction(PlaybackStateCompat.Builder stateBuilder) {
     }
 
     public long getAvailableActions() {

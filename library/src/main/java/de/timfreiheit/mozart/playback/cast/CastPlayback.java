@@ -48,6 +48,7 @@ public class CastPlayback extends Playback {
     private final RemoteMediaClient.Listener mRemoteMediaClientListener;
 
     private volatile int currentPosition;
+    private volatile int duration;
 
     public CastPlayback(MozartMusicService service) {
         this.service = service;
@@ -82,6 +83,14 @@ public class CastPlayback extends Playback {
     }
 
     @Override
+    public int getStreamDuration() {
+        if (!isConnected()) {
+            return duration;
+        }
+        return (int) remoteMediaClient.getStreamDuration();
+    }
+
+    @Override
     public void setCurrentStreamPosition(int pos) {
         this.currentPosition = pos;
     }
@@ -111,6 +120,7 @@ public class CastPlayback extends Playback {
             if (remoteMediaClient.hasMediaSession()) {
                 remoteMediaClient.pause();
                 currentPosition = (int) remoteMediaClient.getApproximateStreamPosition();
+                duration = (int) remoteMediaClient.getStreamDuration();
             } else {
                 loadMedia(getCurrentMedia(), false);
             }

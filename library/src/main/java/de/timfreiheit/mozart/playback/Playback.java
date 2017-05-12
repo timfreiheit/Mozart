@@ -106,6 +106,11 @@ public abstract class Playback {
     public abstract int getCurrentStreamPosition();
 
     /**
+     * @return duration of current item when available; -1 if unknown
+     */
+    public abstract int getStreamDuration();
+
+    /**
      * Set the current position. Typically used when switching players that are in
      * paused state.
      *

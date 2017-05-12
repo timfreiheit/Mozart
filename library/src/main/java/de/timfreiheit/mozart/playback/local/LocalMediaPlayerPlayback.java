@@ -52,6 +52,7 @@ public class LocalMediaPlayerPlayback extends LocalPlayback implements
 
     private boolean playOnFocusGain;
     private volatile int currentPosition;
+    private volatile int duration = -1;
 
     private MediaPlayer mediaPlayer;
 
@@ -92,9 +93,15 @@ public class LocalMediaPlayerPlayback extends LocalPlayback implements
     }
 
     @Override
+    public int getStreamDuration() {
+        return mediaPlayer != null ? mediaPlayer.getDuration() : duration;
+    }
+
+    @Override
     public void updateLastKnownStreamPosition() {
         if (mediaPlayer != null) {
             currentPosition = mediaPlayer.getCurrentPosition();
+            duration = mediaPlayer.getDuration();
         }
     }
 
