@@ -30,6 +30,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -237,9 +238,13 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
     }
 
     protected PendingIntent createContentIntent(MediaDescriptionCompat description) {
-        Intent openUI = new Intent(service, OpenAppShadowActivity.class);
-        return PendingIntent.getActivity(service, REQUEST_CODE, openUI,
-                PendingIntent.FLAG_CANCEL_CURRENT);
+        PendingIntent sessionActivityIntent = controller.getSessionActivity();
+        if (sessionActivityIntent == null) {
+            Intent openUI = new Intent(service, OpenAppShadowActivity.class);
+            sessionActivityIntent = PendingIntent.getActivity(service, REQUEST_CODE, openUI,
+                    PendingIntent.FLAG_CANCEL_CURRENT);
+        }
+        return sessionActivityIntent;
     }
 
     private final MediaControllerCompat.Callback mCb = new MediaControllerCompat.Callback() {
@@ -315,7 +320,8 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
                 .setUsesChronometer(true)
                 .setContentIntent(createContentIntent(description))
                 .setContentTitle(description.getTitle())
-                .setContentText(description.getSubtitle());
+                .setContentText(description.getSubtitle())
+                .setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(service, PlaybackStateCompat.ACTION_STOP));
 
         if (art != null && art.largeImage() != null) {
             notificationBuilder.setLargeIcon(art.largeImage());
