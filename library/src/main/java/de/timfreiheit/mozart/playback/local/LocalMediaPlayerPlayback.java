@@ -50,6 +50,7 @@ public class LocalMediaPlayerPlayback extends LocalPlayback implements
     private final Context context;
     private final WifiManager.WifiLock wifiLock;
 
+    private boolean isPrepared = false;
     private boolean playOnFocusGain;
     private volatile int currentPosition;
     private volatile int duration = -1;
@@ -88,13 +89,13 @@ public class LocalMediaPlayerPlayback extends LocalPlayback implements
 
     @Override
     public int getCurrentStreamPosition() {
-        return mediaPlayer != null ?
+        return mediaPlayer != null && isPrepared ?
                 mediaPlayer.getCurrentPosition() : currentPosition;
     }
 
     @Override
     public int getStreamDuration() {
-        return mediaPlayer != null ? mediaPlayer.getDuration() : duration;
+        return mediaPlayer != null && isPrepared ? mediaPlayer.getDuration() : duration;
     }
 
     @Override
@@ -294,6 +295,7 @@ public class LocalMediaPlayerPlayback extends LocalPlayback implements
         Timber.d("onPrepared from MediaPlayer");
         // The media player is done preparing. That means we can start playing if we
         // have audio focus.
+        isPrepared = true;
         configMediaPlayerState();
     }
 
@@ -336,6 +338,7 @@ public class LocalMediaPlayerPlayback extends LocalPlayback implements
         } else {
             mediaPlayer.reset();
         }
+        isPrepared = false;
     }
 
     /**
