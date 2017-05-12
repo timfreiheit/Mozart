@@ -17,14 +17,12 @@
 package de.timfreiheit.mozart;
 
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.media.MediaBrowserCompat.MediaItem;
 import android.support.v4.media.MediaBrowserServiceCompat;
 import android.support.v4.media.MediaMetadataCompat;
@@ -38,17 +36,16 @@ import com.google.android.gms.cast.framework.CastSession;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
+import de.timfreiheit.mozart.model.MozartMediaProvider;
 import de.timfreiheit.mozart.model.image.MozartImageLoaderCache;
 import de.timfreiheit.mozart.model.image.MozartMediaImageLoader;
-import de.timfreiheit.mozart.model.MozartMediaProvider;
-import de.timfreiheit.mozart.playback.local.LocalMediaPlayerPlayback;
 import de.timfreiheit.mozart.playback.Playback;
 import de.timfreiheit.mozart.playback.PlaybackManager;
 import de.timfreiheit.mozart.playback.QueueManager;
 import de.timfreiheit.mozart.playback.cast.CastPlayback;
 import de.timfreiheit.mozart.playback.cast.CastPlaybackSwitcher;
+import de.timfreiheit.mozart.playback.local.LocalMediaPlayerPlayback;
 import de.timfreiheit.mozart.ui.OpenAppShadowActivity;
-import de.timfreiheit.mozart.utils.CarHelper;
 import de.timfreiheit.mozart.utils.WearHelper;
 import timber.log.Timber;
 
@@ -136,10 +133,6 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
     private final DelayedStopHandler delayedStopHandler = new DelayedStopHandler(this);
     private MediaRouter mediaRouter;
 
-    private boolean isConnectedToCar;
-    private BroadcastReceiver carConnectionReceiver;
-
-
     private CastPlaybackSwitcher castPlaybackSwitcher;
 
     /*
@@ -158,11 +151,10 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
         mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
                 MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
 
-        Context context = getApplicationContext();
-
-        PendingIntent pi = PendingIntent.getActivity(context, 99 /*request code*/,
-                getMediaSessionIntent(), PendingIntent.FLAG_UPDATE_CURRENT);
-        mediaSession.setSessionActivity(pi);
+        PendingIntent sessionActivityIntent = getMediaSessionIntent();
+        if (sessionActivityIntent != null) {
+            mediaSession.setSessionActivity(sessionActivityIntent);
+        }
 
         sessionExtras = new Bundle();
 
@@ -175,12 +167,13 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
         castPlaybackSwitcher = new CastPlaybackSwitcher(this);
         castPlaybackSwitcher.onCreate();
 
-        registerCarConnectionReceiver();
     }
 
-    @NonNull
-    protected Intent getMediaSessionIntent() {
-        return new Intent(getApplicationContext(), OpenAppShadowActivity.class);
+    @Nullable
+    protected PendingIntent getMediaSessionIntent() {
+        Intent intent = new Intent(getApplicationContext(), OpenAppShadowActivity.class);
+        return PendingIntent.getActivity(getApplicationContext(), 99 /*request code*/,
+                intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     public abstract MozartMediaProvider getMediaProvider();
@@ -190,7 +183,7 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
     public abstract MozartMediaImageLoader getImageLoader();
 
     public MozartImageLoaderCache getImageLoaderCache() {
-        if (imageLoaderCache == null){
+        if (imageLoaderCache == null) {
             imageLoaderCache = new MozartImageLoaderCache(getImageLoader());
         }
         return imageLoaderCache;
@@ -290,7 +283,6 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
     @Override
     public void onDestroy() {
         Timber.d("onDestroy");
-        unregisterCarConnectionReceiver();
         // Service is being killed, so make sure we release our resources
         playbackManager.handleStopRequest(null);
         getMediaNotificationManager().stopNotification();
@@ -353,23 +345,6 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
     @Override
     public void onPlaybackStateUpdated(PlaybackStateCompat newState) {
         mediaSession.setPlaybackState(newState);
-    }
-
-    private void registerCarConnectionReceiver() {
-        IntentFilter filter = new IntentFilter(CarHelper.ACTION_MEDIA_STATUS);
-        carConnectionReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String connectionEvent = intent.getStringExtra(CarHelper.MEDIA_CONNECTION_STATUS);
-                isConnectedToCar = CarHelper.MEDIA_CONNECTED.equals(connectionEvent);
-                Timber.i("Connection event to Android Auto: %s isConnectedToCar= %b", connectionEvent, isConnectedToCar);
-            }
-        };
-        registerReceiver(carConnectionReceiver, filter);
-    }
-
-    private void unregisterCarConnectionReceiver() {
-        unregisterReceiver(carConnectionReceiver);
     }
 
     /**
