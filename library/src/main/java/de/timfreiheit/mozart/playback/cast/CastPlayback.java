@@ -214,7 +214,12 @@ public class CastPlayback extends Playback {
                                 })))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(this::updateLastKnownStreamPosition, throwable -> {
+                            // remote media not found. stop playback
+                            onStop(true);
                         });
+            } else {
+                // remote media not found. stop playback
+                onStop(true);
             }
         } catch (JSONException e) {
             Timber.e(e, "Exception processing update metadata");
