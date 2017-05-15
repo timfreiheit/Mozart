@@ -428,6 +428,12 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
     }
 
     @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        stopSelf();
+    }
+
+    @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
         getImageLoaderCache().onTrimMemory(level);
