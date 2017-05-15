@@ -279,6 +279,11 @@ public class LocalMediaPlayerPlayback extends LocalPlayback implements
      */
     @Override
     public void onCompletion(MediaPlayer player) {
+        duration = 0;
+        isPrepared = false;
+        currentPosition = 0;
+        setCurrentMedia(null);
+        setState(PlaybackStateCompat.STATE_NONE);
         Timber.d("onCompletion from MediaPlayer");
         // The media player finished playing the current song, so we go ahead
         // and start the next.
