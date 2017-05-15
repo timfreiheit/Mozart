@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 
 import de.timfreiheit.mozart.Mozart;
+import de.timfreiheit.mozart.MozartPlayCommand;
 import de.timfreiheit.mozart.sample.databinding.ActivityMainBinding;
 import de.timfreiheit.mozart.sample.player.MediaProvider;
 import de.timfreiheit.mozart.sample.ui.BaseActivity;
@@ -46,9 +47,14 @@ public class PlaylistActivity extends BaseActivity {
         binding.playlists.setAdapter(adapter);
 
         adapter.onItemClicked().subscribe(track -> {
+
+            MozartPlayCommand playCommand = MozartPlayCommand.playPlaylist(playlistId)
+                    .mediaId(track.id)
+                    .build();
+
             MediaControllerCompat mediaController = Mozart.get(this).getMediaController();
             if (mediaController == null || mediaController.getMetadata() == null || !mediaController.getMetadata().getDescription().getMediaId().equals(track.id)) {
-                Mozart.get(this).playMedia(playlistId, track.id);
+                Mozart.get(this).executeCommand(playCommand);
             } else {
                 switch (mediaController.getPlaybackState().getState()) {
                     case PlaybackStateCompat.STATE_PLAYING:
@@ -58,7 +64,7 @@ public class PlaylistActivity extends BaseActivity {
                         mediaController.getTransportControls().play();
                         break;
                     case PlaybackStateCompat.STATE_STOPPED:
-                        Mozart.get(this).playMedia(playlistId, track.id);
+                        Mozart.get(this).executeCommand(playCommand);
                         break;
                 }
             }

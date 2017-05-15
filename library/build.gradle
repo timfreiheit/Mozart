@@ -46,5 +46,6 @@ dependencies {
     def auto_value_version = "1.3"
     annotationProcessor "com.google.auto.value:auto-value:${auto_value_version}"
     provided "com.jakewharton.auto.value:auto-value-annotations:${auto_value_version}"
+    annotationProcessor 'com.ryanharter.auto.value:auto-value-parcel:0.2.5'
 
 }

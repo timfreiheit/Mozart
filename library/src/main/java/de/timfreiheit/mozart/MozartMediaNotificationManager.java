@@ -25,6 +25,7 @@ import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.RemoteException;
+import android.support.annotation.CallSuper;
 import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationManagerCompat;
@@ -61,9 +62,11 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
     public static final String ACTION_STOP_CASTING = "de.timfreiheit.mozart.stop_cast";
 
     private final MozartMusicService service;
-    private MediaSessionCompat.Token mSessionToken;
+    private MediaSessionCompat.Token sessionToken;
     private MediaControllerCompat controller;
     private MediaControllerCompat.TransportControls transportControls;
+
+    private MediaControllerCallback mediaControllerCallback;
 
     private PlaybackStateCompat playbackState;
     private MediaMetadataCompat metadata;
@@ -135,12 +138,32 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
         // Cancel all notifications to handle the case where the Service was killed and
         // restarted by the system.
         notificationManager.cancelAll();
+    }
 
+    @CallSuper
+    public void onCreate() {
         registerMediaControllerCallback();
     }
 
+    @CallSuper
+    public void onDestroy() {
+        stopNotification();
+        unregisterMediaControllerCallback();
+    }
+
     private void registerMediaControllerCallback() {
-        service.getMediaController().registerCallback(new MediaControllerCallback());
+        if (mediaControllerCallback != null) {
+            service.getMediaController().unregisterCallback(mediaControllerCallback);
+        }
+        mediaControllerCallback = new MediaControllerCallback();
+        service.getMediaController().registerCallback(mediaControllerCallback);
+    }
+
+    private void unregisterMediaControllerCallback() {
+        if (mediaControllerCallback != null) {
+            service.getMediaController().unregisterCallback(mediaControllerCallback);
+            mediaControllerCallback = null;
+        }
     }
 
     /**
@@ -226,14 +249,14 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
      */
     private void updateSessionToken() throws RemoteException {
         MediaSessionCompat.Token freshToken = service.getSessionToken();
-        if (mSessionToken == null && freshToken != null ||
-                mSessionToken != null && !mSessionToken.equals(freshToken)) {
+        if (sessionToken == null && freshToken != null ||
+                sessionToken != null && !sessionToken.equals(freshToken)) {
             if (controller != null) {
                 controller.unregisterCallback(mCb);
             }
-            mSessionToken = freshToken;
-            if (mSessionToken != null) {
-                controller = new MediaControllerCompat(service, mSessionToken);
+            sessionToken = freshToken;
+            if (sessionToken != null) {
+                controller = new MediaControllerCompat(service, sessionToken);
                 transportControls = controller.getTransportControls();
                 if (started) {
                     controller.registerCallback(mCb);
@@ -390,7 +413,7 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
                 .setShowActionsInCompactView(compactViewActions)
                 .setShowCancelButton(true)
                 .setCancelButtonIntent(stopIntent)
-                .setMediaSession(mSessionToken);
+                .setMediaSession(sessionToken);
     }
 
     protected int addNotificationsActions(NotificationCompat.Builder builder) {
@@ -459,20 +482,21 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
             stopNotification();
             return;
         }
+        Timber.d("updatePlaybackState, playback state= %d", state.getState());
 
         switch (state.getState()) {
             case PlaybackStateCompat.STATE_PLAYING:
             case PlaybackStateCompat.STATE_PAUSED:
-                startNotification();
-                break;
             case PlaybackStateCompat.STATE_BUFFERING:
             case PlaybackStateCompat.STATE_CONNECTING:
-            case PlaybackStateCompat.STATE_ERROR:
             case PlaybackStateCompat.STATE_FAST_FORWARDING:
             case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT:
             case PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS:
             case PlaybackStateCompat.STATE_SKIPPING_TO_QUEUE_ITEM:
             case PlaybackStateCompat.STATE_REWINDING:
+                startNotification();
+                break;
+            case PlaybackStateCompat.STATE_ERROR:
             case PlaybackStateCompat.STATE_NONE:
             default:
                 stopNotification();

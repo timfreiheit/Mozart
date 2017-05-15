@@ -24,7 +24,11 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 
+import java.util.concurrent.TimeUnit;
+
 import de.timfreiheit.mozart.MozartMusicService;
+import de.timfreiheit.mozart.MozartPlayCommand;
+import de.timfreiheit.mozart.model.MozartMetadataBuilder;
 import de.timfreiheit.mozart.model.MozartPlaybackState;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -41,6 +45,8 @@ public class PlaybackManager implements Playback.Callback {
     private Playback playback;
     private PlaybackServiceCallback serviceCallback;
     private MediaSessionCallback mediaSessionCallback;
+
+    private MozartPlayCommand lastPlayCommand;
 
     private final CompositeDisposable getDataDisposable = new CompositeDisposable();
 
@@ -72,6 +78,13 @@ public class PlaybackManager implements Playback.Callback {
     }
 
     public void playMediaById(String mediaId) {
+
+        mozartMusicService.onMetadataChanged(new MozartMetadataBuilder().mediaId(mediaId).build());
+        PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder()
+                .setActions(getAvailableActions())
+                .setState(PlaybackStateCompat.STATE_CONNECTING, 0, 1.0f, SystemClock.elapsedRealtime());
+        serviceCallback.onPlaybackStateUpdated(stateBuilder.build());
+
         getDataDisposable.clear();
         getDataDisposable.add(mozartMusicService.getMediaProvider().getMediaById(mediaId)
                 .subscribeOn(Schedulers.io())
@@ -79,13 +92,20 @@ public class PlaybackManager implements Playback.Callback {
                 .subscribeWith(new DisposableSingleObserver<MediaMetadataCompat>() {
                     @Override
                     public void onSuccess(MediaMetadataCompat mediaMetadata) {
+
+                        playback.setCurrentMedia(mediaMetadata);
+                        if (lastPlayCommand != null && lastPlayCommand.mediaId() != null && lastPlayCommand.mediaId().equals(mediaMetadata.getDescription().getMediaId())) {
+                            playback.setCurrentStreamPosition((int) lastPlayCommand.mediaPlaybackPosition());
+                            lastPlayCommand = null;
+                        }
+
                         playback.play(mediaMetadata);
                         serviceCallback.onPlaybackStart();
                     }
 
                     @Override
                     public void onError(Throwable e) {
-
+                        handleStopRequest(e.getLocalizedMessage());
                     }
                 }));
     }
@@ -181,7 +201,7 @@ public class PlaybackManager implements Playback.Callback {
 
         actions |= PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS;
 
-        if (currentIndex < playlistSize -1) {
+        if (currentIndex < playlistSize - 1) {
             actions |= PlaybackStateCompat.ACTION_SKIP_TO_NEXT;
         }
 
@@ -305,6 +325,22 @@ public class PlaybackManager implements Playback.Callback {
 
     public void handlePlayFromSearch(final String query, final Bundle extras) {
         Timber.d("playFromSearch  query=%s  extras=%s", query, extras);
+    }
+
+    public void handlePlayCommand(MozartPlayCommand playCommand) {
+        if (playCommand.playlistId() == null && playCommand.mediaId() == null) {
+            return;
+        }
+        lastPlayCommand = playCommand;
+        if (playCommand.playlistId() == null) {
+            handlePlaySingleMediaId(playCommand.mediaId());
+        } else {
+            if (playCommand.mediaId() != null) {
+                handlePlayPlaylist(playCommand.playlistId(), playCommand.mediaId());
+            } else {
+                handlePlayPlaylist(playCommand.playlistId(), playCommand.playlistPosition());
+            }
+        }
     }
 
     protected class MediaSessionCallback extends MediaSessionCompat.Callback {

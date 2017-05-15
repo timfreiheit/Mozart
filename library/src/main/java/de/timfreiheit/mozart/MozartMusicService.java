@@ -118,9 +118,7 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
     public static final String CMD_PAUSE = "CMD_PAUSE";
     public static final String CMD_STOP_CASTING = "CMD_STOP_CASTING";
 
-    public static final String ARGS_MEDIA_ID = "ARGS_MEDIA_ID";
-    public static final String ARGS_PLAYLIST_POSITION = "ARGS_PLAYLIST_POSITION";
-    public static final String ARGS_PLAYLIST_ID = "ARGS_PLAYLIST_ID";
+    public static final String ARGS_START_COMMAND = "ARGS_START_COMMAND";
 
     // Delay stopSelf by using a handler.
     private static final int STOP_DELAY = 30000;
@@ -169,7 +167,7 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
         castPlaybackSwitcher = new CastPlaybackSwitcher(this);
         castPlaybackSwitcher.onCreate();
 
-        getMediaNotificationManager();
+        getMediaNotificationManager().onCreate();
     }
 
     @Nullable
@@ -256,21 +254,9 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
                 getPlaybackManager().handlePauseRequest();
                 break;
             case CMD_PLAY:
-                String playlist = startIntent.getStringExtra(ARGS_PLAYLIST_ID);
-                String mediaId = startIntent.getStringExtra(ARGS_MEDIA_ID);
-                int playlistPosition = startIntent.getIntExtra(ARGS_PLAYLIST_POSITION, 0);
-                if (playlist == null && mediaId == null) {
-                    return;
-                }
-                if (playlist == null) {
-                    getPlaybackManager().handlePlaySingleMediaId(mediaId);
-                } else {
-                    if (mediaId != null) {
-                        getPlaybackManager().handlePlayPlaylist(playlist, mediaId);
-                    } else {
-                        getPlaybackManager().handlePlayPlaylist(playlist, playlistPosition);
-                    }
-                }
+
+                MozartPlayCommand playCommand = startIntent.getParcelableExtra(ARGS_START_COMMAND);
+                getPlaybackManager().handlePlayCommand(playCommand);
                 break;
             case CMD_STOP_CASTING:
                 castPlaybackSwitcher.stopCasting();
@@ -295,7 +281,7 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
         Timber.d("onDestroy");
         // Service is being killed, so make sure we release our resources
         playbackManager.handleStopRequest(null);
-        getMediaNotificationManager().stopNotification();
+        getMediaNotificationManager().onDestroy();
 
         castPlaybackSwitcher.onDestroy();
 

@@ -50,25 +50,11 @@ public class MozartServiceActions {
         return intent;
     }
 
-    public static Intent playMedia(Context context, String mediaId) {
-        return playMedia(context, mediaId, null);
-    }
-
-    public static Intent playMedia(Context context, String playlistId, String mediaId) {
+    public static Intent executeCommand(Context context, MozartPlayCommand command) {
         Intent intent = new Intent(context, getMusicService(context));
         intent.setAction(MozartMusicService.ACTION_CMD);
         intent.putExtra(MozartMusicService.CMD_NAME, MozartMusicService.CMD_PLAY);
-        intent.putExtra(MozartMusicService.ARGS_MEDIA_ID, mediaId);
-        intent.putExtra(MozartMusicService.ARGS_PLAYLIST_ID, playlistId);
-        return intent;
-    }
-
-    public static Intent playMedia(Context context, String playlistId, int position) {
-        Intent intent = new Intent(context, getMusicService(context));
-        intent.setAction(MozartMusicService.ACTION_CMD);
-        intent.putExtra(MozartMusicService.CMD_NAME, MozartMusicService.CMD_PLAY);
-        intent.putExtra(MozartMusicService.ARGS_PLAYLIST_POSITION, position);
-        intent.putExtra(MozartMusicService.ARGS_PLAYLIST_ID, playlistId);
+        intent.putExtra(MozartMusicService.ARGS_START_COMMAND, command);
         return intent;
     }
 }

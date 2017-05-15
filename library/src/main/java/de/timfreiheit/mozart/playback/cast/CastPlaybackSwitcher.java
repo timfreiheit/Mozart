@@ -67,25 +67,6 @@ public class CastPlaybackSwitcher {
     private class CastSessionManagerListener implements SessionManagerListener<CastSession> {
 
         @Override
-        public void onSessionEnded(CastSession session, int error) {
-            Timber.d("onSessionEnded");
-            Bundle sessionExtras = service.getSessionExtras();
-            if (!sessionExtras.containsKey(EXTRA_CONNECTED_CAST)) {
-                // we are not casting at the moment
-                return;
-            }
-            sessionExtras.remove(EXTRA_CONNECTED_CAST);
-            service.setSessionExtras(sessionExtras);
-            Playback playback = service.createLocalPlayback();
-            service.getMediaRouter().setMediaSessionCompat(null);
-            service.getPlaybackManager().switchToPlayback(playback, false);
-        }
-
-        @Override
-        public void onSessionResumed(CastSession session, boolean wasSuspended) {
-        }
-
-        @Override
         public void onSessionStarted(CastSession session, String sessionId) {
 
             Playback playback = service.createCastPlayback(session);
@@ -103,11 +84,30 @@ public class CastPlaybackSwitcher {
         }
 
         @Override
+        public void onSessionResumed(CastSession session, boolean wasSuspended) {
+        }
+
+        @Override
         public void onSessionStarting(CastSession session) {
         }
 
         @Override
         public void onSessionStartFailed(CastSession session, int error) {
+        }
+
+        @Override
+        public void onSessionEnded(CastSession session, int error) {
+            Timber.d("onSessionEnded");
+            Bundle sessionExtras = service.getSessionExtras();
+            if (!sessionExtras.containsKey(EXTRA_CONNECTED_CAST)) {
+                // we are not casting at the moment
+                return;
+            }
+            sessionExtras.remove(EXTRA_CONNECTED_CAST);
+            service.setSessionExtras(sessionExtras);
+            Playback playback = service.createLocalPlayback();
+            service.getMediaRouter().setMediaSessionCompat(null);
+            service.getPlaybackManager().switchToPlayback(playback, false);
         }
 
         @Override

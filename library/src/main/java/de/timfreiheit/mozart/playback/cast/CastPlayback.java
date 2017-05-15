@@ -195,6 +195,9 @@ public class CastPlayback extends Playback {
                 String remoteMediaId = customData.getString(ITEM_ID);
                 String playlistId = customData.optString(PLAYLIST_ID, null);
 
+                if (remoteMediaId != null && getCurrentMedia() != null && remoteMediaId.equals(getCurrentMedia().getDescription().getMediaId())) {
+                    return;
+                }
 
                 Completable completable = Completable.error(new Exception());
                 if (playlistId != null) {
@@ -229,15 +232,26 @@ public class CastPlayback extends Playback {
 
     private void updatePlaybackState() {
         int status = remoteMediaClient.getPlayerState();
-        int idleReason = remoteMediaClient.getIdleReason();
 
         Timber.d("onRemoteMediaPlayerStatusUpdated %d", status);
 
         // Convert the remote playback states to media playback states.
         switch (status) {
             case MediaStatus.PLAYER_STATE_IDLE:
-                if (idleReason == MediaStatus.IDLE_REASON_FINISHED) {
-                    getCallback().onCompletion();
+                switch (remoteMediaClient.getIdleReason()) {
+                    case MediaStatus.IDLE_REASON_FINISHED:
+                        getCallback().onCompletion();
+                        break;
+                    case MediaStatus.IDLE_REASON_ERROR:
+                        getCallback().onError("IDLE_REASON_ERROR");
+                        break;
+                    case MediaStatus.IDLE_REASON_INTERRUPTED:
+                    case MediaStatus.IDLE_REASON_NONE:
+                    case MediaStatus.IDLE_REASON_CANCELED:
+                    default:
+                        setState(PlaybackStateCompat.STATE_STOPPED);
+                        getCallback().onPlaybackStatusChanged(getState());
+                        break;
                 }
                 break;
             case MediaStatus.PLAYER_STATE_BUFFERING:

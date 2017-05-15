@@ -42,16 +42,8 @@ public class Mozart {
         new CastReconnector(context);
     }
 
-    public void playMedia(String mediaId) {
-        playMedia(null, mediaId);
-    }
-
-    public void playMedia(String playlistId, String mediaId) {
-        context.startService(MozartServiceActions.playMedia(context, playlistId, mediaId));
-    }
-
-    public void playMedia(String playlistId, int position) {
-        context.startService(MozartServiceActions.playMedia(context, playlistId, position));
+    public void executeCommand(MozartPlayCommand command) {
+        context.startService(MozartServiceActions.executeCommand(context, command));
     }
 
     public void setMediaSessionToken(MediaSessionCompat.Token token) {
