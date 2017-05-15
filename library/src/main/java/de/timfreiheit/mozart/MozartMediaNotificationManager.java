@@ -30,7 +30,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
-import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -136,6 +135,12 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
         // Cancel all notifications to handle the case where the Service was killed and
         // restarted by the system.
         notificationManager.cancelAll();
+
+        registerMediaControllerCallback();
+    }
+
+    private void registerMediaControllerCallback() {
+        service.getMediaController().registerCallback(new MediaControllerCallback());
     }
 
     /**
@@ -447,5 +452,39 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
 
         // Make sure that the notification can be dismissed by the user when we are not playing:
         builder.setOngoing(playbackState.getState() == PlaybackStateCompat.STATE_PLAYING);
+    }
+
+    public void onPlaybackStateChanged(PlaybackStateCompat state) {
+        if (state == null) {
+            stopNotification();
+            return;
+        }
+
+        switch (state.getState()) {
+            case PlaybackStateCompat.STATE_PLAYING:
+            case PlaybackStateCompat.STATE_PAUSED:
+                startNotification();
+                break;
+            case PlaybackStateCompat.STATE_BUFFERING:
+            case PlaybackStateCompat.STATE_CONNECTING:
+            case PlaybackStateCompat.STATE_ERROR:
+            case PlaybackStateCompat.STATE_FAST_FORWARDING:
+            case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT:
+            case PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS:
+            case PlaybackStateCompat.STATE_SKIPPING_TO_QUEUE_ITEM:
+            case PlaybackStateCompat.STATE_REWINDING:
+            case PlaybackStateCompat.STATE_NONE:
+            default:
+                stopNotification();
+        }
+    }
+
+    private class MediaControllerCallback extends MediaControllerCompat.Callback {
+
+        @Override
+        public void onPlaybackStateChanged(PlaybackStateCompat state) {
+            MozartMediaNotificationManager.this.onPlaybackStateChanged(state);
+        }
+
     }
 }

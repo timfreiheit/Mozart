@@ -27,6 +27,7 @@ import android.support.v4.media.MediaBrowserCompat.MediaItem;
 import android.support.v4.media.MediaBrowserServiceCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaButtonReceiver;
+import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.media.MediaRouter;
@@ -124,6 +125,7 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
     // Delay stopSelf by using a handler.
     private static final int STOP_DELAY = 30000;
 
+    private MediaControllerCompat mediaController;
     private QueueManager queueManager;
     private PlaybackManager playbackManager;
     private MozartImageLoaderCache imageLoaderCache;
@@ -167,6 +169,7 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
         castPlaybackSwitcher = new CastPlaybackSwitcher(this);
         castPlaybackSwitcher.onCreate();
 
+        getMediaNotificationManager();
     }
 
     @Nullable
@@ -174,6 +177,13 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
         Intent intent = new Intent(getApplicationContext(), OpenAppShadowActivity.class);
         return PendingIntent.getActivity(getApplicationContext(), 99 /*request code*/,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    public MediaControllerCompat getMediaController() {
+        if (mediaController == null) {
+            mediaController = new MediaControllerCompat(this, mediaSession);
+        }
+        return mediaController;
     }
 
     public abstract MozartMediaProvider getMediaProvider();
@@ -333,13 +343,6 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
         delayedStopHandler.removeCallbacksAndMessages(null);
         delayedStopHandler.sendEmptyMessageDelayed(0, STOP_DELAY);
         stopForeground(true);
-    }
-
-    @Override
-    public void onNotificationRequired() {
-        new Handler(getMainLooper()).post(() -> {
-            getMediaNotificationManager().startNotification();
-        });
     }
 
     @Override

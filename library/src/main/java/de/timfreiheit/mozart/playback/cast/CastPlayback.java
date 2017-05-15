@@ -45,7 +45,7 @@ public class CastPlayback extends Playback {
 
     private final MozartMusicService service;
     private final RemoteMediaClient remoteMediaClient;
-    private final RemoteMediaClient.Listener mRemoteMediaClientListener;
+    private final RemoteMediaClient.Listener remoteMediaClientListener;
 
     private volatile int currentPosition;
     private volatile int duration;
@@ -55,19 +55,19 @@ public class CastPlayback extends Playback {
         CastSession castSession = CastContext.getSharedInstance(service.getApplicationContext()).getSessionManager()
                 .getCurrentCastSession();
         remoteMediaClient = castSession.getRemoteMediaClient();
-        mRemoteMediaClientListener = new CastMediaClientListener();
+        remoteMediaClientListener = new CastMediaClientListener();
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        remoteMediaClient.addListener(mRemoteMediaClientListener);
+        remoteMediaClient.addListener(remoteMediaClientListener);
     }
 
     @Override
     public void onStop(boolean notifyListeners) {
         super.onStop(notifyListeners);
-        remoteMediaClient.removeListener(mRemoteMediaClientListener);
+        remoteMediaClient.removeListener(remoteMediaClientListener);
         setState(PlaybackStateCompat.STATE_STOPPED);
         if (notifyListeners) {
             getCallback().onPlaybackStatusChanged(getState());

@@ -158,11 +158,6 @@ public class PlaybackManager implements Playback.Callback {
         }
 
         serviceCallback.onPlaybackStateUpdated(stateBuilder.build());
-
-        if (state == PlaybackStateCompat.STATE_PLAYING ||
-                state == PlaybackStateCompat.STATE_PAUSED) {
-            serviceCallback.onNotificationRequired();
-        }
     }
 
     protected void addPlaybackStateExtras(Bundle bundle) {
@@ -385,8 +380,6 @@ public class PlaybackManager implements Playback.Callback {
 
     public interface PlaybackServiceCallback {
         void onPlaybackStart();
-
-        void onNotificationRequired();
 
         void onPlaybackStop();
 
