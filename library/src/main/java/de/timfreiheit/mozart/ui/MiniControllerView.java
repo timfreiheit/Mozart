@@ -1,5 +1,6 @@
 package de.timfreiheit.mozart.ui;
 
+import android.app.PendingIntent;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -75,10 +76,17 @@ public class MiniControllerView extends FrameLayout {
         binding = MozartViewMiniControllerBinding.inflate(inflater, this, true);
         setClickable(true);
 
-        if (getBackground() == null) {
-            setBackground(binding.getRoot().getBackground());
-        }
-        binding.getRoot().setBackground(null);
+        setOnClickListener(v -> {
+            if (mediaController == null) {
+                return;
+            }
+            PendingIntent sessionActivityIntent = mediaController.getSessionActivity();
+            try {
+                sessionActivityIntent.send();
+            } catch (PendingIntent.CanceledException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override

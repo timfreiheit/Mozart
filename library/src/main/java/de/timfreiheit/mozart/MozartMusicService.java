@@ -151,7 +151,7 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
         mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
                 MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
 
-        PendingIntent sessionActivityIntent = getMediaSessionIntent();
+        PendingIntent sessionActivityIntent = getMediaSessionIntent(null);
         if (sessionActivityIntent != null) {
             mediaSession.setSessionActivity(sessionActivityIntent);
         }
@@ -171,7 +171,7 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
     }
 
     @Nullable
-    protected PendingIntent getMediaSessionIntent() {
+    protected PendingIntent getMediaSessionIntent(@Nullable MediaMetadataCompat metadataCompat) {
         Intent intent = new Intent(getApplicationContext(), OpenAppShadowActivity.class);
         return PendingIntent.getActivity(getApplicationContext(), 99 /*request code*/,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -365,6 +365,10 @@ public abstract class MozartMusicService extends MediaBrowserServiceCompat imple
      */
     @Override
     public void onMetadataChanged(MediaMetadataCompat metadata) {
+        PendingIntent sessionActivityIntent = getMediaSessionIntent(metadata);
+        if (sessionActivityIntent != null) {
+            mediaSession.setSessionActivity(sessionActivityIntent);
+        }
         mediaSession.setMetadata(metadata);
     }
 

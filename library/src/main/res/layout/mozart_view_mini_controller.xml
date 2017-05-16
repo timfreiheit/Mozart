@@ -5,12 +5,19 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#fff">
+        android:layout_height="wrap_content">
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="5dp"
+            android:background="@drawable/cast_mini_controller_gradient_light"/>
 
         <LinearLayout
+            android:id="@+id/content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:background="#fff"
             android:orientation="horizontal">
 
             <ImageView
@@ -21,7 +28,6 @@
                 tools:src="#AAA"/>
 
             <LinearLayout
-                android:id="@+id/content"
                 android:layout_width="0dp"
                 android:layout_height="64dp"
                 android:layout_gravity="center"
