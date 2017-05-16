@@ -27,7 +27,6 @@ import android.text.TextUtils;
 import java.io.IOException;
 
 import de.timfreiheit.mozart.model.MozartMediaMetadata;
-import de.timfreiheit.mozart.playback.local.LocalPlayback;
 import timber.log.Timber;
 
 import static android.media.MediaPlayer.OnCompletionListener;
@@ -178,10 +177,8 @@ public class LocalMediaPlayerPlayback extends LocalPlayback implements
     public void seekTo(int position) {
         Timber.d("seekTo called with %s", position);
 
-        if (mediaPlayer == null) {
-            // If we do not have a current media player, simply update the current position
-            currentPosition = position;
-        } else {
+        currentPosition = position;
+        if (mediaPlayer != null) {
             if (mediaPlayer.isPlaying()) {
                 setState(PlaybackStateCompat.STATE_BUFFERING);
             }
@@ -379,6 +376,18 @@ public class LocalMediaPlayerPlayback extends LocalPlayback implements
 
     @Override
     public boolean onInfo(MediaPlayer mp, int what, int extra) {
+        Timber.d("onInfo what: %d, extra: %d", what, extra);
+        switch (what) {
+            case MediaPlayer.MEDIA_INFO_BUFFERING_START:
+                setState(PlaybackStateCompat.STATE_BUFFERING);
+                break;
+
+            case MediaPlayer.MEDIA_INFO_BUFFERING_END:
+                if (getState() == PlaybackStateCompat.STATE_BUFFERING) {
+                    setState(PlaybackStateCompat.STATE_PLAYING);
+                }
+                break;
+        }
         // do not change state
         getCallback().onPlaybackStatusChanged(getState());
         return false;

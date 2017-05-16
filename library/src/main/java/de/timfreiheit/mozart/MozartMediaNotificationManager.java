@@ -157,6 +157,7 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
         }
         mediaControllerCallback = new MediaControllerCallback();
         service.getMediaController().registerCallback(mediaControllerCallback);
+        onPlaybackStateChanged(service.getMediaController().getPlaybackState());
     }
 
     private void unregisterMediaControllerCallback() {

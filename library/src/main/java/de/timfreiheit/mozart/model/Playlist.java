@@ -3,6 +3,7 @@ package de.timfreiheit.mozart.model;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.media.MediaMetadataCompat;
+import android.text.TextUtils;
 
 import java.util.List;
 
@@ -59,7 +60,7 @@ public class Playlist {
         for (int i = 0; i < playlist1.size(); i++) {
             MediaMetadataCompat mediaMetadataCompat = playlist1.get(i);
             String id = mediaMetadataCompat.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID);
-            if (id != null && id.equals(mediaId)) {
+            if (TextUtils.equals(id, mediaId)) {
                 return i;
             }
         }

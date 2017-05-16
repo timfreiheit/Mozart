@@ -40,6 +40,8 @@ import timber.log.Timber;
  */
 public class CastPlayback extends Playback {
 
+    private static final boolean UPDATE_META_DATA_FROM_REMOTE = false;
+
     private static final String ITEM_ID = "ITEM_ID";
     private static final String PLAYLIST_ID = "PLAYLIST_ID";
 
@@ -103,6 +105,7 @@ public class CastPlayback extends Playback {
     @Override
     public void play(MediaMetadataCompat item) {
         try {
+            Timber.d("play(%s)", item.getDescription().getMediaId());
             loadMedia(item, true);
             setState(PlaybackStateCompat.STATE_BUFFERING);
             getCallback().onPlaybackStatusChanged(getState());
@@ -176,6 +179,7 @@ public class CastPlayback extends Playback {
         customData.put(ITEM_ID, item.getDescription().getMediaId());
         customData.put(PLAYLIST_ID, service.getQueueManager().getPlaylistId());
         MediaInfo media = MediaInfoUtils.metaDataToMediaInfo(item, customData);
+        Timber.d("loadMedia(%s)", item.getDescription().getMediaId());
         remoteMediaClient.load(media, autoPlay, currentPosition, customData);
     }
 
@@ -185,6 +189,7 @@ public class CastPlayback extends Playback {
         // This can happen when the app was either restarted/disconnected + connected, or if the
         // app joins an existing session while the Chromecast was playing a queue.
         try {
+            Timber.d("setMetadataFromRemote() called");
             MediaInfo mediaInfo = remoteMediaClient.getMediaInfo();
             if (mediaInfo == null) {
                 return;
@@ -195,7 +200,13 @@ public class CastPlayback extends Playback {
                 String remoteMediaId = customData.getString(ITEM_ID);
                 String playlistId = customData.optString(PLAYLIST_ID, null);
 
-                if (remoteMediaId != null && getCurrentMedia() != null && remoteMediaId.equals(getCurrentMedia().getDescription().getMediaId())) {
+                Timber.d("setMetadataFromRemote(%s)", remoteMediaId);
+
+                if (remoteMediaId != null && getCurrentMedia() != null && TextUtils.equals(remoteMediaId, getCurrentMedia().getDescription().getMediaId())) {
+                    return;
+                }
+
+                if (!UPDATE_META_DATA_FROM_REMOTE) {
                     return;
                 }
 
@@ -210,11 +221,15 @@ public class CastPlayback extends Playback {
                 }
                 completable.onErrorResumeNext(throwable -> service.getMediaProvider().getMediaById(remoteMediaId)
                         .subscribeOn(Schedulers.io())
-                        .flatMapCompletable(mediaMetadata -> service.getQueueManager().setQueueByMediaId(remoteMediaId)
-                                .doOnComplete(() -> {
-                                    // the remoteMedia should be skipped in queue
-                                    service.getQueueManager().skipQueuePosition(1);
-                                })))
+                        .flatMapCompletable(mediaMetadata -> {
+                            Timber.d("setQueueByMediaId(%s)", remoteMediaId);
+                            return service.getQueueManager().setQueueByMediaId(remoteMediaId);
+                        })
+                        .doOnComplete(() -> {
+                            // the remoteMedia should be skipped in queue
+                            service.getQueueManager().skipQueuePosition(1);
+                        })
+                )
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(this::updateLastKnownStreamPosition, throwable -> {
                             // remote media not found. stop playback
@@ -238,6 +253,7 @@ public class CastPlayback extends Playback {
         // Convert the remote playback states to media playback states.
         switch (status) {
             case MediaStatus.PLAYER_STATE_IDLE:
+                Timber.d("onRemoteMediaPlayerStatusUpdated %d: IdleReason %d", status, remoteMediaClient.getIdleReason());
                 switch (remoteMediaClient.getIdleReason()) {
                     case MediaStatus.IDLE_REASON_FINISHED:
                         getCallback().onCompletion();
@@ -245,10 +261,7 @@ public class CastPlayback extends Playback {
                     case MediaStatus.IDLE_REASON_ERROR:
                         getCallback().onError("IDLE_REASON_ERROR");
                         break;
-                    case MediaStatus.IDLE_REASON_INTERRUPTED:
-                    case MediaStatus.IDLE_REASON_NONE:
                     case MediaStatus.IDLE_REASON_CANCELED:
-                    default:
                         setState(PlaybackStateCompat.STATE_STOPPED);
                         getCallback().onPlaybackStatusChanged(getState());
                         break;

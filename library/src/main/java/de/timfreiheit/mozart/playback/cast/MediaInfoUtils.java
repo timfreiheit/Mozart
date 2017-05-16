@@ -1,7 +1,6 @@
 package de.timfreiheit.mozart.playback.cast;
 
 import android.net.Uri;
-import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 
 import com.google.android.gms.cast.MediaInfo;
@@ -11,6 +10,7 @@ import com.google.android.gms.common.images.WebImage;
 import org.json.JSONObject;
 
 import de.timfreiheit.mozart.model.MozartMediaMetadata;
+import de.timfreiheit.mozart.model.MozartMetadataBuilder;
 
 public class MediaInfoUtils {
 
@@ -55,6 +55,20 @@ public class MediaInfoUtils {
                 .setMetadata(mediaMetadata)
                 .setCustomData(customData)
                 .build();
+    }
+
+    public static MediaMetadataCompat mediaInfoToMetadata(MediaInfo mediaInfo) {
+        MozartMetadataBuilder builder = new MozartMetadataBuilder()
+                .title(mediaInfo.getMetadata().getString(MediaMetadata.KEY_TITLE))
+                .displaySubtitle(mediaInfo.getMetadata().getString(MediaMetadata.KEY_SUBTITLE))
+                .artist(mediaInfo.getMetadata().getString(MediaMetadata.KEY_ALBUM_ARTIST))
+                .album(mediaInfo.getMetadata().getString(MediaMetadata.KEY_ALBUM_TITLE));
+
+        if (mediaInfo.getMetadata().getImages().size() > 0) {
+            builder.albumArtUri(mediaInfo.getMetadata().getImages().get(0).getUrl().toString());
+        }
+
+        return builder.build();
     }
 
 
