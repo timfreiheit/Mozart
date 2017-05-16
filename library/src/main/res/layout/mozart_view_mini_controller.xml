@@ -89,6 +89,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:padding="8dp"
+                    android:background="?selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_play_arrow_black_36dp"/>
 
             </FrameLayout>
