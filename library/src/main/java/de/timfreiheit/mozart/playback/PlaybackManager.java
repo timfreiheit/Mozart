@@ -139,7 +139,7 @@ public class PlaybackManager implements Playback.Callback {
     public void updatePlaybackState(String error) {
         Timber.d("updatePlaybackState, playback state= %d", playback.getState());
         long position = PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN;
-        int duration = -1;
+        long duration = -1;
         if (playback != null && playback.isConnected()) {
             position = playback.getCurrentStreamPosition();
             duration = playback.getStreamDuration();
@@ -172,7 +172,7 @@ public class PlaybackManager implements Playback.Callback {
         }
 
         Bundle extras = new Bundle();
-        extras.putInt(MozartPlaybackState.STATE_DURATION, duration);
+        extras.putLong(MozartPlaybackState.STATE_DURATION, duration);
         addPlaybackStateExtras(extras);
         stateBuilder.setExtras(extras);
 

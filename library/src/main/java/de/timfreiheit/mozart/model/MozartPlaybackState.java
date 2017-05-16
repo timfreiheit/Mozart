@@ -12,11 +12,11 @@ public class MozartPlaybackState {
      * @see #STATE_DURATION
      * @see Playback#getStreamDuration()
      */
-    public static int getStreamDuration(PlaybackStateCompat playbackState) {
+    public static long getStreamDuration(PlaybackStateCompat playbackState) {
         if (playbackState.getExtras() == null) {
             return -1;
         }
-        return playbackState.getExtras().getInt(STATE_DURATION, -1);
+        return playbackState.getExtras().getLong(STATE_DURATION, -1);
     }
 
 }

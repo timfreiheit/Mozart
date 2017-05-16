@@ -209,7 +209,7 @@ public class MiniControllerView extends FrameLayout {
                     lastPlaybackState.getLastPositionUpdateTime();
             currentPosition += (int) timeDelta * lastPlaybackState.getPlaybackSpeed();
         }
-        setStreamPosition((int) currentPosition, MozartPlaybackState.getStreamDuration(lastPlaybackState));
+        setStreamPosition((int) currentPosition, (int) MozartPlaybackState.getStreamDuration(lastPlaybackState));
     }
 
     private void setStreamPosition(int position, int duration) {
