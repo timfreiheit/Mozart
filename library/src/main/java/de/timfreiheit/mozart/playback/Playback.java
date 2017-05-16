@@ -16,6 +16,7 @@
 package de.timfreiheit.mozart.playback;
 
 import android.support.annotation.CallSuper;
+import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.PlaybackStateCompat;

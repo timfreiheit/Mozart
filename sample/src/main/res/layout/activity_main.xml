@@ -13,5 +13,12 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 
+        <de.timfreiheit.mozart.ui.MiniControllerView
+            android:id="@+id/miniControllerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:elevation="8dp"/>
+
     </FrameLayout>
 </layout>

@@ -39,7 +39,7 @@ import static android.media.MediaPlayer.OnSeekCompleteListener;
  * A class that implements local media playback using {@link MediaPlayer}
  */
 public class LocalMediaPlayerPlayback extends LocalPlayback implements
-        OnCompletionListener, OnErrorListener, OnPreparedListener, OnSeekCompleteListener {
+        OnCompletionListener, OnErrorListener, OnPreparedListener, OnSeekCompleteListener, MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnInfoListener {
 
     // The volume we set the media player to when we lose audio focus, but are
     // allowed to reduce the volume instead of stopping playback.
@@ -340,6 +340,8 @@ public class LocalMediaPlayerPlayback extends LocalPlayback implements
             mediaPlayer.setOnCompletionListener(this);
             mediaPlayer.setOnErrorListener(this);
             mediaPlayer.setOnSeekCompleteListener(this);
+            mediaPlayer.setOnBufferingUpdateListener(this);
+            mediaPlayer.setOnInfoListener(this);
         } else {
             mediaPlayer.reset();
         }
@@ -369,4 +371,16 @@ public class LocalMediaPlayerPlayback extends LocalPlayback implements
         }
     }
 
+    @Override
+    public void onBufferingUpdate(MediaPlayer mp, int percent) {
+        // do not change state
+        getCallback().onPlaybackStatusChanged(getState());
+    }
+
+    @Override
+    public boolean onInfo(MediaPlayer mp, int what, int extra) {
+        // do not change state
+        getCallback().onPlaybackStatusChanged(getState());
+        return false;
+    }
 }

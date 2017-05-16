@@ -110,7 +110,7 @@ public class MediaProvider extends MozartMediaProvider {
                 .contentUri(track.source)
                 .artist(track.artist)
                 .album(track.album)
-                .duration(track.duration)
+                .duration(track.duration * 1000)
                 .genre(track.genre)
                 .albumArtUri(track.image)
                 .title(track.title)

@@ -24,11 +24,8 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 
-import java.util.concurrent.TimeUnit;
-
 import de.timfreiheit.mozart.MozartMusicService;
 import de.timfreiheit.mozart.MozartPlayCommand;
-import de.timfreiheit.mozart.model.MozartMetadataBuilder;
 import de.timfreiheit.mozart.model.MozartPlaybackState;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -79,7 +76,6 @@ public class PlaybackManager implements Playback.Callback {
 
     public void playMediaById(String mediaId) {
 
-        mozartMusicService.onMetadataChanged(new MozartMetadataBuilder().mediaId(mediaId).build());
         PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder()
                 .setActions(getAvailableActions())
                 .setState(PlaybackStateCompat.STATE_CONNECTING, 0, 1.0f, SystemClock.elapsedRealtime());
@@ -92,7 +88,6 @@ public class PlaybackManager implements Playback.Callback {
                 .subscribeWith(new DisposableSingleObserver<MediaMetadataCompat>() {
                     @Override
                     public void onSuccess(MediaMetadataCompat mediaMetadata) {
-
                         playback.setCurrentMedia(mediaMetadata);
                         if (lastPlayCommand != null && lastPlayCommand.mediaId() != null && lastPlayCommand.mediaId().equals(mediaMetadata.getDescription().getMediaId())) {
                             playback.setCurrentStreamPosition((int) lastPlayCommand.mediaPlaybackPosition());
@@ -148,6 +143,18 @@ public class PlaybackManager implements Playback.Callback {
         if (playback != null && playback.isConnected()) {
             position = playback.getCurrentStreamPosition();
             duration = playback.getStreamDuration();
+        }
+
+        if (duration < 0) {
+            // fall back to provided metadata when available
+            MediaMetadataCompat metaData = mozartMusicService.getMediaController().getMetadata();
+            if (metaData != null) {
+                duration = (int) metaData.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
+                if (duration == 0 || duration < position) {
+                    // position is not set or invalid
+                    duration = -1;
+                }
+            }
         }
 
         PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder()

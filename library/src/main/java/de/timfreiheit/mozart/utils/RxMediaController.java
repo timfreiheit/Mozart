@@ -16,28 +16,29 @@ public class RxMediaController {
                 @Override
                 public void onMetadataChanged(MediaMetadataCompat metadata) {
                     super.onMetadataChanged(metadata);
-                    emitter.onNext(Optional.of(metadata));
+                    emitter.onNext(Optional.ofNullable(metadata));
                 }
             };
             controllerCompat.registerCallback(callback);
 
+            emitter.onNext(Optional.ofNullable(controllerCompat.getMetadata()));
             emitter.setCancellable(() -> controllerCompat.unregisterCallback(callback));
         }).startWith(Optional.of(controllerCompat.getMetadata()));
     }
 
-    public static Observable<PlaybackStateCompat> playbackState(MediaControllerCompat controllerCompat) {
-        return Observable.<PlaybackStateCompat>create(emitter -> {
+    public static Observable<Optional<PlaybackStateCompat>> playbackState(MediaControllerCompat controllerCompat) {
+        return Observable.<Optional<PlaybackStateCompat>>create(emitter -> {
             MediaControllerCompat.Callback callback = new MediaControllerCompat.Callback() {
                 @Override
                 public void onPlaybackStateChanged(PlaybackStateCompat state) {
                     super.onPlaybackStateChanged(state);
-                    emitter.onNext(state);
+                    emitter.onNext(Optional.ofNullable(state));
                 }
             };
             controllerCompat.registerCallback(callback);
 
             emitter.setCancellable(() -> controllerCompat.unregisterCallback(callback));
-        }).startWith(controllerCompat.getPlaybackState());
+        }).startWith(Optional.ofNullable(controllerCompat.getPlaybackState()));
     }
 
 }

@@ -83,7 +83,7 @@ public class PlaylistActivity extends BaseActivity {
                     if (mediaController == null) {
                         adapter.setCurrentMedia(null, null);
                     } else {
-                        adapter.setCurrentMedia(mediaController.getMetadata(), playbackState);
+                        adapter.setCurrentMedia(mediaController.getMetadata(), playbackState.orNull());
                     }
                 }, Throwable::printStackTrace));
     }
