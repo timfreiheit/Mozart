@@ -122,7 +122,7 @@ public class MiniControllerView extends FrameLayout {
         compositeDisposable.add(Mozart.get(getContext()).mediaController()
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext(mediaControllerCompat -> this.mediaController = mediaControllerCompat)
-                .flatMap(mediaControllerCompat -> {
+                .switchMap(mediaControllerCompat -> {
 
                     Observable<Optional<PlaybackStateCompat>> playbackStateObservable = RxMediaController.playbackState(mediaControllerCompat)
                             .doOnNext(playbackState -> {

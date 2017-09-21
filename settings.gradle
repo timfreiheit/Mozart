@@ -1,1 +1,1 @@
-include ':sample', ':mozart'
+include ':sample', ':mozart', ':mozart-exoplayer'

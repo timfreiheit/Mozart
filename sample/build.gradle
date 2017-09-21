@@ -44,5 +44,6 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
     compile project(path: ':mozart')
+    compile project(path: ':mozart-exoplayer')
     compile 'com.android.support:design:25.3.1'
 }

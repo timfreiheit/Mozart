@@ -174,6 +174,7 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
      */
     @MainThread
     public void startNotification() {
+        Timber.d("startNotification");
         if (!started) {
             metadata = controller.getMetadata();
             playbackState = controller.getPlaybackState();
