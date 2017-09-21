@@ -51,8 +51,8 @@ public class LocalMediaPlayerPlayback extends LocalPlayback implements
 
     private boolean isPrepared = false;
     private boolean playOnFocusGain;
-    private volatile int currentPosition;
-    private volatile int duration = -1;
+    private volatile long currentPosition;
+    private volatile long duration = -1;
 
     private MediaPlayer mediaPlayer;
 
@@ -87,13 +87,13 @@ public class LocalMediaPlayerPlayback extends LocalPlayback implements
     }
 
     @Override
-    public int getCurrentStreamPosition() {
+    public long getCurrentStreamPosition() {
         return mediaPlayer != null && isPrepared ?
                 mediaPlayer.getCurrentPosition() : currentPosition;
     }
 
     @Override
-    public int getStreamDuration() {
+    public long getStreamDuration() {
         return mediaPlayer != null && isPrepared ? mediaPlayer.getDuration() : duration;
     }
 
@@ -174,7 +174,7 @@ public class LocalMediaPlayerPlayback extends LocalPlayback implements
     }
 
     @Override
-    public void seekTo(int position) {
+    public void seekTo(long position) {
         Timber.d("seekTo called with %s", position);
 
         currentPosition = position;
@@ -182,13 +182,13 @@ public class LocalMediaPlayerPlayback extends LocalPlayback implements
             if (mediaPlayer.isPlaying()) {
                 setState(PlaybackStateCompat.STATE_BUFFERING);
             }
-            mediaPlayer.seekTo(position);
+            mediaPlayer.seekTo((int) position);
             getCallback().onPlaybackStatusChanged(getState());
         }
     }
 
     @Override
-    public void setCurrentStreamPosition(int pos) {
+    public void setCurrentStreamPosition(long pos) {
         this.currentPosition = pos;
     }
 
@@ -226,7 +226,7 @@ public class LocalMediaPlayerPlayback extends LocalPlayback implements
                         mediaPlayer.start();
                         setState(PlaybackStateCompat.STATE_PLAYING);
                     } else {
-                        mediaPlayer.seekTo(currentPosition);
+                        mediaPlayer.seekTo((int) currentPosition);
                         setState(PlaybackStateCompat.STATE_BUFFERING);
                     }
                 }

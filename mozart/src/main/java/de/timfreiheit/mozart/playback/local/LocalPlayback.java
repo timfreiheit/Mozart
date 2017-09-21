@@ -67,6 +67,10 @@ public abstract class LocalPlayback extends Playback implements AudioManager.OnA
         setCallback(null);
     }
 
+    public Context getContext() {
+        return context;
+    }
+
     @Override
     public void onStart() {
         super.onStart();

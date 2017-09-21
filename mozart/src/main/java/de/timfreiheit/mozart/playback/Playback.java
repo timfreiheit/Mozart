@@ -104,12 +104,12 @@ public abstract class Playback {
     /**
      * @return pos if currently playing an item
      */
-    public abstract int getCurrentStreamPosition();
+    public abstract long getCurrentStreamPosition();
 
     /**
      * @return duration of current item when available; -1 if unknown
      */
-    public abstract int getStreamDuration();
+    public abstract long getStreamDuration();
 
     /**
      * Set the current position. Typically used when switching players that are in
@@ -117,7 +117,7 @@ public abstract class Playback {
      *
      * @param pos position in the stream
      */
-    public abstract void setCurrentStreamPosition(int pos);
+    public abstract void setCurrentStreamPosition(long pos);
 
     /**
      * Query the underlying stream and update the internal last known stream position.
@@ -137,7 +137,7 @@ public abstract class Playback {
     /**
      * Seek to the given position
      */
-    public abstract void seekTo(int position);
+    public abstract void seekTo(long position);
 
     public interface Callback {
         /**

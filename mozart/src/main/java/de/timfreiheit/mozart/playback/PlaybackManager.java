@@ -90,7 +90,7 @@ public class PlaybackManager implements Playback.Callback {
                     public void onSuccess(MediaMetadataCompat mediaMetadata) {
                         playback.setCurrentMedia(mediaMetadata);
                         if (lastPlayCommand != null && lastPlayCommand.mediaId() != null && lastPlayCommand.mediaId().equals(mediaMetadata.getDescription().getMediaId())) {
-                            playback.setCurrentStreamPosition((int) lastPlayCommand.mediaPlaybackPosition());
+                            playback.setCurrentStreamPosition(lastPlayCommand.mediaPlaybackPosition());
                             lastPlayCommand = null;
                         }
 
@@ -253,7 +253,7 @@ public class PlaybackManager implements Playback.Callback {
         Timber.d("switchToPlayback(%s)", playback);
         // suspend the current one.
         int oldState = this.playback.getState();
-        int pos = this.playback.getCurrentStreamPosition();
+        long pos = this.playback.getCurrentStreamPosition();
         MediaMetadataCompat currentMedia = this.playback.getCurrentMedia();
         this.playback.onStop(false);
         playback.setCallback(this);

@@ -49,8 +49,8 @@ public class CastPlayback extends Playback {
     private final RemoteMediaClient remoteMediaClient;
     private final RemoteMediaClient.Listener remoteMediaClientListener;
 
-    private volatile int currentPosition;
-    private volatile int duration;
+    private volatile long currentPosition;
+    private volatile long duration;
 
     public CastPlayback(MozartMusicService service) {
         this.service = service;
@@ -77,23 +77,23 @@ public class CastPlayback extends Playback {
     }
 
     @Override
-    public int getCurrentStreamPosition() {
+    public long getCurrentStreamPosition() {
         if (!isConnected()) {
             return currentPosition;
         }
-        return (int) remoteMediaClient.getApproximateStreamPosition();
+        return remoteMediaClient.getApproximateStreamPosition();
     }
 
     @Override
-    public int getStreamDuration() {
+    public long getStreamDuration() {
         if (!isConnected()) {
             return duration;
         }
-        return (int) remoteMediaClient.getStreamDuration();
+        return remoteMediaClient.getStreamDuration();
     }
 
     @Override
-    public void setCurrentStreamPosition(int pos) {
+    public void setCurrentStreamPosition(long pos) {
         this.currentPosition = pos;
     }
 
@@ -135,7 +135,7 @@ public class CastPlayback extends Playback {
     }
 
     @Override
-    public void seekTo(int position) {
+    public void seekTo(long position) {
         if (getCurrentMedia() == null) {
             getCallback().onError("seekTo cannot be calling in the absence of mediaId.");
 
