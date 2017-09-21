@@ -23,7 +23,7 @@ public class RxMediaController {
 
             emitter.onNext(Optional.ofNullable(controllerCompat.getMetadata()));
             emitter.setCancellable(() -> controllerCompat.unregisterCallback(callback));
-        }).startWith(Optional.of(controllerCompat.getMetadata()));
+        }).startWith(Optional.ofNullable(controllerCompat.getMetadata()));
     }
 
     public static Observable<Optional<PlaybackStateCompat>> playbackState(MediaControllerCompat controllerCompat) {

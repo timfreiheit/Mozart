@@ -28,13 +28,13 @@ import android.os.RemoteException;
 import android.support.annotation.CallSuper;
 import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.support.v7.app.NotificationCompat;
 
 import de.timfreiheit.mozart.model.image.CoverImage;
 import de.timfreiheit.mozart.playback.cast.CastPlaybackSwitcher;
@@ -397,7 +397,7 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
         return CoverImage.create(BitmapFactory.decodeResource(service.getResources(), R.drawable.ic_default_art), null);
     }
 
-    protected NotificationCompat.MediaStyle createMediaStyle(int availableActions) {
+    protected android.support.v4.media.app.NotificationCompat.MediaStyle createMediaStyle(int availableActions) {
 
         if (availableActions < 0) {
             availableActions = 0;
@@ -411,7 +411,7 @@ public abstract class MozartMediaNotificationManager extends BroadcastReceiver {
             compactViewActions[i] = i;
         }
 
-        return new NotificationCompat.MediaStyle()
+        return new android.support.v4.media.app.NotificationCompat.MediaStyle()
                 .setShowActionsInCompactView(compactViewActions)
                 .setShowCancelButton(true)
                 .setCancelButtonIntent(stopIntent)
