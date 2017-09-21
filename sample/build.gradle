@@ -43,6 +43,6 @@ dependencies {
     compile 'com.squareup.picasso:picasso:2.5.2'
 
     testCompile 'junit:junit:4.12'
-    compile project(path: ':library')
+    compile project(path: ':mozart')
     compile 'com.android.support:design:25.3.1'
 }
