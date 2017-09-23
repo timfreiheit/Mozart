@@ -38,7 +38,7 @@ public class ImageLoader extends MozartMediaImageLoader {
     public Single<Bitmap> loadCover(String uri) {
         return Single.defer(() -> {
             try {
-                return Single.just(Picasso.with(App.instance()).load(uri).get());
+                return Single.just(Picasso.with(App.Companion.instance()).load(uri).get());
             } catch (IOException e1) {
                 return Single.error(e1);
             }

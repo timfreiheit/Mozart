@@ -22,7 +22,7 @@ import io.reactivex.disposables.CompositeDisposable
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
-open class MiniControllerView @JvmOverloads constructor(
+class MiniControllerView @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
@@ -46,6 +46,7 @@ open class MiniControllerView @JvmOverloads constructor(
                 e.printStackTrace()
             }
         }
+        Mozart.init(context)
     }
 
     override fun onAttachedToWindow() {
@@ -75,7 +76,7 @@ open class MiniControllerView @JvmOverloads constructor(
 
     private fun registerPlaybackCallbacks() {
         compositeDisposable.clear()
-        compositeDisposable.add(Mozart.get(context).mediaController()
+        compositeDisposable.add(Mozart.mediaController()
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext { mediaControllerCompat -> this.mediaController = mediaControllerCompat }
                 .switchMap { mediaControllerCompat ->

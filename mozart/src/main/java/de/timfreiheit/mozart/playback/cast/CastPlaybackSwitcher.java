@@ -70,9 +70,6 @@ public class CastPlaybackSwitcher {
         public void onSessionStarted(CastSession session, String sessionId) {
 
             Playback playback = service.createCastPlayback(session);
-            if (playback == null) {
-                return;
-            }
 
             // In case we are casting, send the device name as an extra on MediaSession metadata.
             Bundle sessionExtras = service.getSessionExtras();

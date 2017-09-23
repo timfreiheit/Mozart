@@ -8,7 +8,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.timfreiheit.mozart.model.MozartMediaMetadata;
 import de.timfreiheit.mozart.model.MozartMediaProvider;
 import de.timfreiheit.mozart.model.MozartMetadataBuilder;
 import de.timfreiheit.mozart.model.Playlist;
@@ -33,7 +32,7 @@ public class MediaProvider extends MozartMediaProvider {
             data = Single.<List<Track>>fromCallable(() -> {
                 Gson gson = new Gson();
                 return gson.fromJson(
-                        new InputStreamReader(App.instance().getAssets().open("music.json")), MusicData.class
+                        new InputStreamReader(App.Companion.instance().getAssets().open("music.json")), MusicData.class
                 ).music;
             }).cache();
         }

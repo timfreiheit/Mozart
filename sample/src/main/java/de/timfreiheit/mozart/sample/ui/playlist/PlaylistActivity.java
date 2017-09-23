@@ -51,9 +51,9 @@ public class PlaylistActivity extends BaseActivity {
                     .mediaId(track.id)
                     .build();
 
-            MediaControllerCompat mediaController = Mozart.get(this).getMediaController();
+            MediaControllerCompat mediaController = Mozart.INSTANCE.getMediaController();
             if (mediaController == null || mediaController.getMetadata() == null || !mediaController.getMetadata().getDescription().getMediaId().equals(track.id)) {
-                Mozart.get(this).executeCommand(playCommand);
+                Mozart.INSTANCE.executeCommand(playCommand);
             } else {
                 switch (mediaController.getPlaybackState().getState()) {
                     case PlaybackStateCompat.STATE_PLAYING:
@@ -63,7 +63,7 @@ public class PlaylistActivity extends BaseActivity {
                         mediaController.getTransportControls().play();
                         break;
                     case PlaybackStateCompat.STATE_STOPPED:
-                        Mozart.get(this).executeCommand(playCommand);
+                        Mozart.INSTANCE.executeCommand(playCommand);
                         break;
                 }
             }
@@ -74,11 +74,11 @@ public class PlaylistActivity extends BaseActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        compositeDisposable.add(Mozart.get(this).mediaController()
+        compositeDisposable.add(Mozart.INSTANCE.mediaController()
                 .observeOn(AndroidSchedulers.mainThread())
                 .flatMap(RxMediaController::playbackState)
                 .subscribe(playbackState -> {
-                    MediaControllerCompat mediaController = Mozart.get(this).getMediaController();
+                    MediaControllerCompat mediaController = Mozart.INSTANCE.getMediaController();
                     if (mediaController == null) {
                         adapter.setCurrentMedia(null, null);
                     } else {

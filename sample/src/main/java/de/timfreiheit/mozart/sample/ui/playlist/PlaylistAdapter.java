@@ -39,7 +39,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<BindingViewHolder> {
         Track track = data.get(position);
         binding.title.setText(track.title);
         binding.artist.setText(track.artist);
-        Picasso.with(App.instance()).load(track.image).into(binding.cover);
+        Picasso.with(App.Companion.instance()).load(track.image).into(binding.cover);
 
         binding.getRoot().setOnClickListener(v -> onItemClicked.onNext(track));
 

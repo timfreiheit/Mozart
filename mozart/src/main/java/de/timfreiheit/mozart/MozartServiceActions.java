@@ -10,7 +10,9 @@ import java.util.List;
 
 public class MozartServiceActions {
 
-    public static Class<? extends Service> getMusicService(Context context) {
+    private static Class<? extends Service> getMusicService(Context context) {
+        Mozart.INSTANCE.init(context);
+
         Intent intent = new Intent(MediaBrowserServiceCompat.SERVICE_INTERFACE);
         intent.setPackage(context.getPackageName());
 
@@ -38,23 +40,23 @@ public class MozartServiceActions {
 
     public static Intent pause(Context context) {
         Intent intent = new Intent(context, getMusicService(context));
-        intent.setAction(MozartMusicService.ACTION_CMD);
-        intent.putExtra(MozartMusicService.CMD_NAME, MozartMusicService.CMD_PAUSE);
+        intent.setAction(MozartMusicService.Companion.getACTION_CMD());
+        intent.putExtra(MozartMusicService.Companion.getCMD_NAME(), MozartMusicService.Companion.getCMD_PAUSE());
         return intent;
     }
 
     public static Intent stopCasting(Context context) {
         Intent intent = new Intent(context, getMusicService(context));
-        intent.setAction(MozartMusicService.ACTION_CMD);
-        intent.putExtra(MozartMusicService.CMD_NAME, MozartMusicService.CMD_STOP_CASTING);
+        intent.setAction(MozartMusicService.Companion.getACTION_CMD());
+        intent.putExtra(MozartMusicService.Companion.getCMD_NAME(), MozartMusicService.Companion.getCMD_STOP_CASTING());
         return intent;
     }
 
     public static Intent executeCommand(Context context, MozartPlayCommand command) {
         Intent intent = new Intent(context, getMusicService(context));
-        intent.setAction(MozartMusicService.ACTION_CMD);
-        intent.putExtra(MozartMusicService.CMD_NAME, MozartMusicService.CMD_PLAY);
-        intent.putExtra(MozartMusicService.ARGS_START_COMMAND, command);
+        intent.setAction(MozartMusicService.Companion.getACTION_CMD());
+        intent.putExtra(MozartMusicService.Companion.getCMD_NAME(), MozartMusicService.Companion.getCMD_PLAY());
+        intent.putExtra(MozartMusicService.Companion.getARGS_START_COMMAND(), command);
         return intent;
     }
 }
