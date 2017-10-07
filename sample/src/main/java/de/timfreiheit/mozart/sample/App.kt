@@ -1,6 +1,10 @@
 package de.timfreiheit.mozart.sample
 
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.os.Build
 
 import de.timfreiheit.mozart.Mozart
 import timber.log.Timber
@@ -14,8 +18,11 @@ class App : Application() {
         Timber.plant(Timber.DebugTree())
         ImageLoader.getInstance().init(this)
 
+        AppNotificationManager.createChannels(this)
         Mozart.init(this)
     }
+
+
 
     companion object {
 
