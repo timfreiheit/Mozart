@@ -14,7 +14,7 @@ import java.util.*
 
 object MediaProvider : MozartMediaProvider() {
 
-    private var data: Single<List<Track>> = Single.fromCallable {
+    val data: Single<List<Track>> = Single.fromCallable {
         val gson = Gson()
         gson.fromJson(
                 InputStreamReader(App.instance().assets.open("music.json")), MusicData::class.java

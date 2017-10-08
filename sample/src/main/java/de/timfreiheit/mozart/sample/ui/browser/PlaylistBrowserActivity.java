@@ -36,7 +36,7 @@ public class PlaylistBrowserActivity extends BaseActivity {
     }
 
     private void loadPlaylists() {
-        MediaProvider.getInstance().loadData()
+        MediaProvider.INSTANCE.getData()
                 .flatMapObservable(Observable::fromIterable)
                 .groupBy(track -> track.getGenre())
                 .map(GroupedObservable::getKey)

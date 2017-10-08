@@ -94,7 +94,7 @@ public class PlaylistActivity extends BaseActivity {
     }
 
     private void loadPlaylist() {
-        MediaProvider.getInstance().getTracksForPlaylist(playlistId)
+        MediaProvider.INSTANCE.getTracksForPlaylist(playlistId)
                 .subscribe(playlist -> adapter.setData(playlist), throwable -> {
                 });
     }
