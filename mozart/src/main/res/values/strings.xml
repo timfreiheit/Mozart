@@ -6,6 +6,8 @@
     <string name="label_next">Next</string>
     <string name="casting_to_device">Casting to %1$s</string>
 
+    <string name="playback_channel.name">Playback</string>
+
     <string name="error_no_metadata">Unable to retrieve metadata.</string>
 
 </resources>

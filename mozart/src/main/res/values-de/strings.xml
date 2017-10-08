@@ -21,4 +21,6 @@
     <string name="label_previous">Zurück</string>
     <string name="label_next">Weiter</string>
     <string name="casting_to_device">Wiedergabe auf %1$s</string>
+
+    <string name="playback_channel.name">Wiedergabe</string>
 </resources>

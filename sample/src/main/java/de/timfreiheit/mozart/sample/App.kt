@@ -18,7 +18,6 @@ class App : Application() {
         Timber.plant(Timber.DebugTree())
         ImageLoader.getInstance().init(this)
 
-        AppNotificationManager.createChannels(this)
         Mozart.init(this)
     }
 

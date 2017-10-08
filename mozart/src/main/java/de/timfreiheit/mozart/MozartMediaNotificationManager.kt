@@ -17,7 +17,10 @@
 package de.timfreiheit.mozart
 
 import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -64,7 +67,7 @@ abstract class MozartMediaNotificationManager @Throws(RemoteException::class) co
 
     open val notificationId: Int = 412
 
-    abstract val notificationChannelId: String
+    val notificationChannelId: String by lazy { createPlaybackChannel(service.applicationContext) }
 
     val notificationColor: Int = ResourceHelper.getThemeColor(this.service, R.attr.colorPrimary,
             Color.DKGRAY)
@@ -88,6 +91,27 @@ abstract class MozartMediaNotificationManager @Throws(RemoteException::class) co
     fun onDestroy() {
         stopNotification()
         unregisterMediaControllerCallback()
+    }
+
+    private fun createPlaybackChannel(context: Context): String {
+        val channelId = "de.freiheit.mozart.playback_channel"
+        if (Build.VERSION.SDK_INT < 26) {
+            return channelId
+        }
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (notificationManager.getNotificationChannel(channelId) == null) {
+            val channelName = context.getString(R.string.playback_channel_name)
+            val importance = NotificationManager.IMPORTANCE_LOW
+            val notificationChannel = NotificationChannel(channelId, channelName, importance).apply {
+                enableVibration(false)
+                enableLights(false)
+                setShowBadge(false)
+                setSound(null, null)
+            }
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
+        return channelId
     }
 
     private fun registerMediaControllerCallback() {
