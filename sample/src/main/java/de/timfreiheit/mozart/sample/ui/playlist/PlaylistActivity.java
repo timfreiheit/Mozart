@@ -48,11 +48,11 @@ public class PlaylistActivity extends BaseActivity {
         adapter.onItemClicked().subscribe(track -> {
 
             MozartPlayCommand playCommand = MozartPlayCommand.playPlaylist(playlistId)
-                    .mediaId(track.id)
+                    .mediaId(track.getId())
                     .build();
 
             MediaControllerCompat mediaController = Mozart.INSTANCE.getMediaController();
-            if (mediaController == null || mediaController.getMetadata() == null || !mediaController.getMetadata().getDescription().getMediaId().equals(track.id)) {
+            if (mediaController == null || mediaController.getMetadata() == null || !mediaController.getMetadata().getDescription().getMediaId().equals(track.getId())) {
                 Mozart.INSTANCE.executeCommand(playCommand);
             } else {
                 switch (mediaController.getPlaybackState().getState()) {

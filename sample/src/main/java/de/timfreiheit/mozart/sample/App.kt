@@ -16,7 +16,7 @@ class App : Application() {
         app = this
 
         Timber.plant(Timber.DebugTree())
-        ImageLoader.getInstance().init(this)
+        ImageLoader.init(this)
 
         Mozart.init(this)
     }

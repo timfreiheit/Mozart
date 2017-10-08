@@ -12,10 +12,10 @@ class MusicService : MozartMusicService() {
     override val mediaNotificationManager by lazy {  MediaNotificationManager(this) }
 
     override val mediaProvider: MozartMediaProvider
-        get() = MediaProvider.getInstance()
+        get() = MediaProvider.instance
 
     override val imageLoader: MozartMediaImageLoader
-        get() = ImageLoader.getInstance()
+        get() = ImageLoader
 
     override fun createLocalPlayback(): Playback {
         return ExoplayerPlayback(this)

@@ -37,9 +37,9 @@ public class PlaylistAdapter extends RecyclerView.Adapter<BindingViewHolder> {
     public void onBindViewHolder(BindingViewHolder holder, int position) {
         ItemPlaylistBinding binding = holder.getBinding();
         Track track = data.get(position);
-        binding.title.setText(track.title);
-        binding.artist.setText(track.artist);
-        Picasso.with(App.Companion.instance()).load(track.image).into(binding.cover);
+        binding.title.setText(track.getTitle());
+        binding.artist.setText(track.getArtist());
+        Picasso.with(App.Companion.instance()).load(track.getImage()).into(binding.cover);
 
         binding.getRoot().setOnClickListener(v -> onItemClicked.onNext(track));
 
@@ -51,7 +51,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<BindingViewHolder> {
         binding.playpause.setVisibility(View.VISIBLE);
         binding.progressBar.setVisibility(View.GONE);
 
-        if (playbackState == null || currentMedia == null || !currentMedia.getDescription().getMediaId().equals(track.id)) {
+        if (playbackState == null || currentMedia == null || !currentMedia.getDescription().getMediaId().equals(track.getId())) {
             binding.playpause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
             return;
         }

@@ -14,31 +14,25 @@
  * limitations under the License.
  */
 
-package de.timfreiheit.mozart.sample;
+package de.timfreiheit.mozart.sample
 
-import android.content.Context;
+import android.content.Context
 
-import com.google.android.gms.cast.CastMediaControlIntent;
-import com.google.android.gms.cast.framework.CastOptions;
-import com.google.android.gms.cast.framework.OptionsProvider;
-import com.google.android.gms.cast.framework.SessionProvider;
-
-import java.util.List;
+import com.google.android.gms.cast.CastMediaControlIntent
+import com.google.android.gms.cast.framework.CastOptions
+import com.google.android.gms.cast.framework.OptionsProvider
+import com.google.android.gms.cast.framework.SessionProvider
 
 /**
  * Specify receiver application ID for cast
  */
-public class CastOptionsProvider implements OptionsProvider {
+class CastOptionsProvider : OptionsProvider {
 
-    @Override
-    public CastOptions getCastOptions(Context context) {
-        return new CastOptions.Builder()
+    override fun getCastOptions(context: Context): CastOptions {
+        return CastOptions.Builder()
                 .setReceiverApplicationId(CastMediaControlIntent.DEFAULT_MEDIA_RECEIVER_APPLICATION_ID)
-                .build();
+                .build()
     }
 
-    @Override
-    public List<SessionProvider> getAdditionalSessionProviders(Context context) {
-        return null;
-    }
+    override fun getAdditionalSessionProviders(context: Context): List<SessionProvider>? = null
 }
