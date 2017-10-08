@@ -121,7 +121,7 @@ class QueueManager(
         }
     }
 
-    fun setQueueByPlaylistId(playlistId: String, initialMedia: String): Completable {
+    fun setQueueByPlaylistId(playlistId: String, initialMedia: String?): Completable {
         return mozartMusicService.mediaProvider.getPlaylistById(playlistId)
                 .flatMapCompletable { playlist1 ->
                     val index = playlist1.getPositionByMediaId(initialMedia)

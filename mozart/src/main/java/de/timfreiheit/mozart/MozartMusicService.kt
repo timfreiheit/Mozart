@@ -115,7 +115,7 @@ import java.lang.ref.WeakReference
 abstract class MozartMusicService : MediaBrowserServiceCompat(), PlaybackManager.PlaybackServiceCallback {
 
     val queueManager: QueueManager by lazy { QueueManager(this, QueueManagerListener()) }
-    val playbackManager: PlaybackManager by lazy { PlaybackManager(this) }
+    open val playbackManager: PlaybackManager by lazy { PlaybackManager(this) }
 
     val mediaSession: MediaSessionCompat by lazy { MediaSessionCompat(this, "MusicService")  }
     val mediaController by lazy { MediaControllerCompat(this, mediaSession) }
@@ -157,7 +157,7 @@ abstract class MozartMusicService : MediaBrowserServiceCompat(), PlaybackManager
         WearHelper.setUseBackgroundFromTheme(sessionExtras, true)
         mediaSession.setExtras(sessionExtras)
 
-        playbackManager.updatePlaybackState(null)
+        playbackManager.updatePlaybackState()
 
         castPlaybackSwitcher.onCreate()
 

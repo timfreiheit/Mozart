@@ -12,7 +12,7 @@ data class Playlist(
     /**
      * @return -1 when media not found
      */
-    fun getPositionByMediaId(mediaId: String): Int {
+    fun getPositionByMediaId(mediaId: String?): Int {
         val playlist1 = playlist
         for (i in playlist1.indices) {
             val mediaMetadataCompat = playlist1[i]
