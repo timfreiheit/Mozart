@@ -26,7 +26,7 @@ import android.support.v4.media.session.PlaybackStateCompat;
 
 import de.timfreiheit.mozart.MozartMusicService;
 import de.timfreiheit.mozart.MozartPlayCommand;
-import de.timfreiheit.mozart.model.MozartPlaybackState;
+import de.timfreiheit.mozart.model.MozartPlaybackStateKt;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableSingleObserver;
@@ -172,7 +172,7 @@ public class PlaybackManager implements Playback.Callback {
         }
 
         Bundle extras = new Bundle();
-        extras.putLong(MozartPlaybackState.STATE_DURATION, duration);
+        extras.putLong(MozartPlaybackStateKt.getSTATE_DURATION(), duration);
         addPlaybackStateExtras(extras);
         stateBuilder.setExtras(extras);
 
