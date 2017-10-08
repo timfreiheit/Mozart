@@ -112,9 +112,9 @@ import java.lang.ref.WeakReference
 
  * @see [README.md](README.md) for more details.
  */
-abstract class MozartMusicService : MediaBrowserServiceCompat(), PlaybackManager.PlaybackServiceCallback, QueueManager.MetadataUpdateListener {
+abstract class MozartMusicService : MediaBrowserServiceCompat(), PlaybackManager.PlaybackServiceCallback {
 
-    val queueManager: QueueManager by lazy { QueueManager(this) }
+    val queueManager: QueueManager by lazy { QueueManager(this, QueueManagerListener()) }
     val playbackManager: PlaybackManager by lazy { PlaybackManager(this) }
 
     val mediaSession: MediaSessionCompat by lazy { MediaSessionCompat(this, "MusicService")  }
@@ -304,42 +304,6 @@ abstract class MozartMusicService : MediaBrowserServiceCompat(), PlaybackManager
         }
     }
 
-    /**
-     * @see QueueManager.MetadataUpdateListener.onMetadataChanged
-     */
-    override fun onMetadataChanged(metadata: MediaMetadataCompat) {
-        val sessionActivityIntent = getMediaSessionIntent(metadata)
-        if (sessionActivityIntent != null) {
-            mediaSession.setSessionActivity(sessionActivityIntent)
-        }
-        mediaSession.setMetadata(metadata)
-    }
-
-    /**
-     * @see QueueManager.MetadataUpdateListener.onMetadataRetrieveError
-     */
-    override fun onMetadataRetrieveError() {
-        playbackManager.updatePlaybackState(
-                getString(R.string.error_no_metadata))
-    }
-
-    /**
-     * @see QueueManager.MetadataUpdateListener.onCurrentQueueIndexUpdated
-     */
-    override fun onCurrentQueueIndexUpdated(queueIndex: Int) {
-        playbackManager.handlePlayRequest()
-    }
-
-
-    /**
-     * @see QueueManager.MetadataUpdateListener.onQueueUpdated
-     */
-    override fun onQueueUpdated(title: String,
-                                newQueue: List<MediaSessionCompat.QueueItem>) {
-        mediaSession.setQueue(newQueue)
-        mediaSession.setQueueTitle(title)
-    }
-
     fun getSessionExtras(): Bundle {
         return sessionExtras
     }
@@ -358,6 +322,43 @@ abstract class MozartMusicService : MediaBrowserServiceCompat(), PlaybackManager
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
         imageLoaderCache.onTrimMemory(level)
+    }
+
+    private inner class QueueManagerListener: QueueManager.MetadataUpdateListener {
+
+        /**
+         * @see QueueManager.MetadataUpdateListener.onMetadataChanged
+         */
+        override fun onMetadataChanged(metadata: MediaMetadataCompat) {
+            val sessionActivityIntent = getMediaSessionIntent(metadata)
+            if (sessionActivityIntent != null) {
+                mediaSession.setSessionActivity(sessionActivityIntent)
+            }
+            mediaSession.setMetadata(metadata)
+        }
+
+        /**
+         * @see QueueManager.MetadataUpdateListener.onMetadataRetrieveError
+         */
+        override fun onMetadataRetrieveError() {
+            playbackManager.updatePlaybackState(
+                    getString(R.string.error_no_metadata))
+        }
+
+        /**
+         * @see QueueManager.MetadataUpdateListener.onCurrentQueueIndexUpdated
+         */
+        override fun onCurrentQueueIndexUpdated(queueIndex: Int) {
+            playbackManager.handlePlayRequest()
+        }
+
+        /**
+         * @see QueueManager.MetadataUpdateListener.onQueueUpdated
+         */
+        override fun onQueueUpdated(title: String?, newQueue: List<MediaSessionCompat.QueueItem>) {
+            mediaSession.setQueue(newQueue)
+            mediaSession.setQueueTitle(title)
+        }
     }
 
     companion object {
