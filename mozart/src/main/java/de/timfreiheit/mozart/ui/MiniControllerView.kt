@@ -15,7 +15,8 @@ import de.timfreiheit.mozart.R
 import de.timfreiheit.mozart.databinding.MozartViewMiniControllerBinding
 import de.timfreiheit.mozart.model.MozartPlaybackState
 import de.timfreiheit.mozart.playback.cast.CastPlaybackSwitcher
-import de.timfreiheit.mozart.utils.RxMediaController
+import de.timfreiheit.mozart.utils.metadataChanges
+import de.timfreiheit.mozart.utils.playbackStateChanges
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -81,11 +82,11 @@ class MiniControllerView @JvmOverloads constructor(
                 .doOnNext { mediaControllerCompat -> this.mediaController = mediaControllerCompat }
                 .switchMap { mediaControllerCompat ->
 
-                    val playbackStateObservable = RxMediaController.playbackState(mediaControllerCompat)
-                            .doOnNext { playbackState -> updatePlaybackState(playbackState.orNull()) }
+                    val playbackStateObservable = mediaControllerCompat.playbackStateChanges()
+                            .doOnNext { playbackState -> updatePlaybackState(playbackState.toNullable()) }
 
-                    val metadataObservable = RxMediaController.metadata(mediaControllerCompat)
-                            .doOnNext { metadata -> updateMetadata(metadata.orNull()) }
+                    val metadataObservable = mediaControllerCompat.metadataChanges()
+                            .doOnNext { metadata -> updateMetadata(metadata.toNullable()) }
 
                     Observable.merge(playbackStateObservable, metadataObservable)
                 }

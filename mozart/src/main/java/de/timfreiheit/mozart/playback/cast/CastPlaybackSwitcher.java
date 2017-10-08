@@ -30,7 +30,7 @@ public class CastPlaybackSwitcher {
     public void onCreate() {
         int playServicesAvailable =
                 GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(service);
-        if (!TvHelper.isTvUiMode(service) && playServicesAvailable == ConnectionResult.SUCCESS) {
+        if (!TvHelper.INSTANCE.isTvUiMode(service) && playServicesAvailable == ConnectionResult.SUCCESS) {
             try {
                 castSessionManager = CastContext.getSharedInstance(service).getSessionManager();
                 castSessionManagerListener = new CastSessionManagerListener();

@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.timfreiheit.mozart.utils;
+package de.timfreiheit.mozart.utils
 
-import android.app.UiModeManager;
-import android.content.Context;
-import android.content.res.Configuration;
+import android.app.UiModeManager
+import android.content.Context
+import android.content.res.Configuration
 
-import timber.log.Timber;
+import timber.log.Timber
 
-public class TvHelper {
+internal object TvHelper {
 
     /**
      * Returns true when running Android TV
@@ -29,14 +29,14 @@ public class TvHelper {
      * @param c Context to detect UI Mode.
      * @return true when device is running in tv mode, false otherwise.
      */
-    public static boolean isTvUiMode(Context c) {
-        UiModeManager uiModeManager = (UiModeManager) c.getSystemService(Context.UI_MODE_SERVICE);
-        if (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION) {
-            Timber.d("Running in TV mode");
-            return true;
+    fun isTvUiMode(c: Context): Boolean {
+        val uiModeManager = c.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        if (uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION) {
+            Timber.d("Running in TV mode")
+            return true
         } else {
-            Timber.d("Running on a non-TV mode");
-            return false;
+            Timber.d("Running on a non-TV mode")
+            return false
         }
     }
 }

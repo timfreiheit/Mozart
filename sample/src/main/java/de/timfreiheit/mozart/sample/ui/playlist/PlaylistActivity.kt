@@ -10,7 +10,7 @@ import de.timfreiheit.mozart.MozartPlayCommand
 import de.timfreiheit.mozart.sample.databinding.ActivityMainBinding
 import de.timfreiheit.mozart.sample.player.MediaProvider
 import de.timfreiheit.mozart.sample.ui.BaseActivity
-import de.timfreiheit.mozart.utils.RxMediaController
+import de.timfreiheit.mozart.utils.playbackStateChanges
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 
@@ -56,13 +56,13 @@ class PlaylistActivity : BaseActivity() {
         super.onStart()
         compositeDisposable.add(Mozart.mediaController()
                 .observeOn(AndroidSchedulers.mainThread())
-                .flatMap { RxMediaController.playbackState(it) }
+                .switchMap { it.playbackStateChanges() }
                 .subscribe({ playbackState ->
                     val mediaController = Mozart.mediaController
                     if (mediaController == null) {
                         adapter.setCurrentMedia(null, null)
                     } else {
-                        adapter.setCurrentMedia(mediaController.metadata, playbackState.orNull())
+                        adapter.setCurrentMedia(mediaController.metadata, playbackState.toNullable())
                     }
                 }, { it.printStackTrace() }))
     }

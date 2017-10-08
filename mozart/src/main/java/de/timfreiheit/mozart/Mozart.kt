@@ -4,7 +4,10 @@ import android.content.Context
 import android.os.RemoteException
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
-import com.hadisatrio.optional.Optional
+import com.gojuno.koptional.None
+import com.gojuno.koptional.Optional
+import com.gojuno.koptional.rxjava2.filterSome
+import com.gojuno.koptional.toOptional
 import de.timfreiheit.mozart.playback.cast.CastReconnector
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
@@ -14,7 +17,7 @@ object Mozart {
     private var initialized = false
     private var context: Context? = null
 
-    private val mediaSessionSubject = BehaviorSubject.createDefault(Optional.absent<MediaSessionCompat.Token>())
+    private val mediaSessionSubject = BehaviorSubject.createDefault<Optional<MediaSessionCompat.Token>>(None)
 
     fun init(context: Context) {
         if (initialized) {
@@ -37,8 +40,8 @@ object Mozart {
     }
 
     var mediaSessionToken: MediaSessionCompat.Token?
-        get() = mediaSessionSubject.value.orNull()
-        set(token) = mediaSessionSubject.onNext(Optional.ofNullable<MediaSessionCompat.Token>(token))
+        get() = mediaSessionSubject.value.toNullable()
+        set(token) = mediaSessionSubject.onNext(token.toOptional())
 
     fun mediaSessionToken(): Observable<Optional<MediaSessionCompat.Token>> {
         return mediaSessionSubject
@@ -46,21 +49,20 @@ object Mozart {
 
     fun mediaController(): Observable<MediaControllerCompat> {
         return mediaSessionSubject
-                .filter { it.isPresent }
-                .map { token -> MediaControllerCompat(context, token.get()) }
+                .filterSome()
+                .map { token -> MediaControllerCompat(context, token) }
     }
 
     val mediaController: MediaControllerCompat?
         get() {
             checkIfInitialized()
-            if (mediaSessionSubject.value != null && mediaSessionSubject.value.isPresent) {
-                try {
-                    return MediaControllerCompat(context, mediaSessionSubject.value.get())
+            mediaSessionToken?.let { mediaSessionToken ->
+                return try {
+                    MediaControllerCompat(context, mediaSessionToken)
                 } catch (e: RemoteException) {
                     e.printStackTrace()
-                    return null
+                    null
                 }
-
             }
             return null
         }

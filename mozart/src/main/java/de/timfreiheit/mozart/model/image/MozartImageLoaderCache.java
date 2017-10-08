@@ -5,9 +5,10 @@ import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LruCache;
 
-import de.timfreiheit.mozart.utils.BitmapHelper;
 import io.reactivex.Single;
 import timber.log.Timber;
+
+import static de.timfreiheit.mozart.utils.BitmapHelperKt.scaleBitmap;
 
 public class MozartImageLoaderCache {
 
@@ -58,9 +59,9 @@ public class MozartImageLoaderCache {
             if(cache.get(uri) == null) {
                 return imageLoader.loadCover(uri)
                         .map(loadedBitmap -> {
-                            Bitmap coverBitmap = BitmapHelper.scaleBitmap(loadedBitmap,
+                            Bitmap coverBitmap = scaleBitmap(loadedBitmap,
                                     MAX_ART_WIDTH_PX, MAX_ART_HEIGHT_PX);
-                            Bitmap iconBitmap = BitmapHelper.scaleBitmap(loadedBitmap,
+                            Bitmap iconBitmap = scaleBitmap(loadedBitmap,
                                     MAX_ART_WIDTH_ICON_PX, MAX_ART_HEIGHT_ICON_PX);
                             CoverImage coverImage = CoverImage.create(coverBitmap, iconBitmap);
                             cache.put(uri, coverImage);

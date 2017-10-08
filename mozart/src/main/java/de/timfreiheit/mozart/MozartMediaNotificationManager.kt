@@ -39,7 +39,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import de.timfreiheit.mozart.model.image.CoverImage
 import de.timfreiheit.mozart.playback.cast.CastPlaybackSwitcher
 import de.timfreiheit.mozart.ui.OpenAppShadowActivity
-import de.timfreiheit.mozart.utils.ResourceHelper
+import de.timfreiheit.mozart.utils.getThemeColor
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
@@ -69,7 +69,7 @@ abstract class MozartMediaNotificationManager @Throws(RemoteException::class) co
 
     val notificationChannelId: String by lazy { createPlaybackChannel(service.applicationContext) }
 
-    val notificationColor: Int = ResourceHelper.getThemeColor(this.service, R.attr.colorPrimary,
+    val notificationColor: Int = this.service.getThemeColor(R.attr.colorPrimary,
             Color.DKGRAY)
 
     private var started = false
