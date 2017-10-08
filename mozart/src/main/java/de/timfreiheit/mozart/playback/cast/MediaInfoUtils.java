@@ -9,7 +9,7 @@ import com.google.android.gms.common.images.WebImage;
 
 import org.json.JSONObject;
 
-import de.timfreiheit.mozart.model.MozartMediaMetadata;
+import de.timfreiheit.mozart.model.MozartMediaMetadataKt;
 import de.timfreiheit.mozart.model.MozartMetadataBuilder;
 
 public class MediaInfoUtils {
@@ -47,10 +47,10 @@ public class MediaInfoUtils {
         // when the cast dialog is clicked.
         mediaMetadata.addImage(image);
 
-        int streamType = MozartMediaMetadata.getStreamType(track);
+        int streamType = MozartMediaMetadataKt.getStreamType(track);
 
-        return new MediaInfo.Builder(MozartMediaMetadata.getContentUri(track))
-                .setContentType(MozartMediaMetadata.getContentType(track))
+        return new MediaInfo.Builder(MozartMediaMetadataKt.getContentUri(track))
+                .setContentType(MozartMediaMetadataKt.getContentType(track))
                 .setStreamType(streamType)
                 .setMetadata(mediaMetadata)
                 .setCustomData(customData)

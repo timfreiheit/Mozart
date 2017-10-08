@@ -35,7 +35,7 @@ public class MozartImageLoaderCache {
         cache = new LruCache<String, CoverImage>(cacheSize) {
             @Override
             protected int sizeOf(String key, CoverImage value) {
-                return value.byteCount();
+                return value.getByteCount();
             }
         };
     }
@@ -63,7 +63,7 @@ public class MozartImageLoaderCache {
                                     MAX_ART_WIDTH_PX, MAX_ART_HEIGHT_PX);
                             Bitmap iconBitmap = scaleBitmap(loadedBitmap,
                                     MAX_ART_WIDTH_ICON_PX, MAX_ART_HEIGHT_ICON_PX);
-                            CoverImage coverImage = CoverImage.create(coverBitmap, iconBitmap);
+                            CoverImage coverImage = new CoverImage(coverBitmap, iconBitmap);
                             cache.put(uri, coverImage);
                             return coverImage;
                         });

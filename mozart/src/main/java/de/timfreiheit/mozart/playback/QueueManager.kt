@@ -19,7 +19,7 @@ package de.timfreiheit.mozart.playback
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import de.timfreiheit.mozart.MozartMusicService
-import de.timfreiheit.mozart.model.MozartMediaMetadata
+import de.timfreiheit.mozart.model.META_DATA_PLAYLIST
 import de.timfreiheit.mozart.model.Playlist
 import de.timfreiheit.mozart.model.image.CoverImage
 import de.timfreiheit.mozart.utils.createMediaQueue
@@ -162,12 +162,14 @@ class QueueManager(
                     return@defer Single.just<MediaMetadataCompat>(track)
                 }
             }
-            mozartMusicService.mediaProvider.getMediaById(currentMusic.description.mediaId)
+            currentMusic.description.mediaId?.let {
+                mozartMusicService.mediaProvider.getMediaById(it)
+            }
         }.subscribeOn(Schedulers.io())
                 .subscribe({ metadata ->
 
                     listener.onMetadataChanged(fetchMediaImages(MediaMetadataCompat.Builder(metadata)
-                            .putString(MozartMediaMetadata.META_DATA_PLAYLIST, playlist.id)
+                            .putString(META_DATA_PLAYLIST, playlist.id)
                             .build()))
 
                 }) { throw IllegalArgumentException("Invalid musicId " + currentMusic.description.mediaId!!) })
@@ -204,12 +206,12 @@ class QueueManager(
         }
         val newMetadata = MediaMetadataCompat.Builder(metadata)
 
-        if (coverImage.largeImage() != null) {
-            newMetadata.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, coverImage.largeImage())
+        if (coverImage.largeImage != null) {
+            newMetadata.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, coverImage.largeImage)
         }
 
-        if (coverImage.icon() != null) {
-            newMetadata.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, coverImage.icon())
+        if (coverImage.icon != null) {
+            newMetadata.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, coverImage.icon)
         }
 
         return newMetadata.build()

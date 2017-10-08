@@ -282,11 +282,11 @@ abstract class MozartMediaNotificationManager @Throws(RemoteException::class) co
             notificationBuilder.color = notificationColor
         }
 
-        if (art != null && art.largeImage() != null) {
-            notificationBuilder.setLargeIcon(art.largeImage())
+        if (art != null && art.largeImage != null) {
+            notificationBuilder.setLargeIcon(art.largeImage)
         }
 
-        if (controller != null && controller!!.extras != null) {
+        if (controller != null && controller?.extras != null) {
             val castName = controller!!.extras.getString(CastPlaybackSwitcher.EXTRA_CONNECTED_CAST)
             if (castName != null) {
                 val castInfo = service.resources
@@ -307,8 +307,8 @@ abstract class MozartMediaNotificationManager @Throws(RemoteException::class) co
                         if (metadata != null && metadata!!.description.iconUri != null &&
                                 metadata!!.description.iconUri!!.toString() == finalFetchArtUrl) {
                             // If the media is still the same, update the notification:
-                            if (coverImage.largeImage() != null) {
-                                notificationBuilder.setLargeIcon(coverImage.largeImage())
+                            if (coverImage.largeImage != null) {
+                                notificationBuilder.setLargeIcon(coverImage.largeImage)
                                 notificationManager.notify(notificationId, notificationBuilder.build())
                             }
                         }
@@ -318,10 +318,10 @@ abstract class MozartMediaNotificationManager @Throws(RemoteException::class) co
         return notificationBuilder.build()
     }
 
-    protected abstract val notificationIcon: Int
+    abstract val notificationIcon: Int
 
     open val defaultCover: CoverImage
-        get() = CoverImage.create(BitmapFactory.decodeResource(service.resources, R.drawable.ic_default_art), null)
+        get() = CoverImage(BitmapFactory.decodeResource(service.resources, R.drawable.ic_default_art), null)
 
     open fun createMediaStyle(availableActions: Int): android.support.v4.media.app.NotificationCompat.MediaStyle {
         val actionCount = when {

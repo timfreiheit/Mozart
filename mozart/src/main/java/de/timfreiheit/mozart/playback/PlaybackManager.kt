@@ -85,11 +85,11 @@ open class PlaybackManager(service: MozartMusicService) : Playback.Callback {
         Timber.d("handlePlayRequest: mState= %d", playback.state)
         val currentMusic = mozartMusicService.queueManager.currentMusic
         if (currentMusic != null) {
-            playMediaById(currentMusic.description.mediaId)
+            currentMusic.description.mediaId?.let { playMediaById(it) }
         }
     }
 
-    fun playMediaById(mediaId: String?) {
+    fun playMediaById(mediaId: String) {
 
         val stateBuilder = PlaybackStateCompat.Builder()
                 .setActions(availableActions)
@@ -253,7 +253,7 @@ open class PlaybackManager(service: MozartMusicService) : Playback.Callback {
             PlaybackStateCompat.STATE_PLAYING -> {
                 val currentMusic = mozartMusicService.queueManager.currentMusic
                 if (resumePlaying && currentMusic != null) {
-                    playMediaById(currentMusic.description.mediaId)
+                    currentMusic.description.mediaId?.let { playMediaById(it) }
                 } else if (!resumePlaying) {
                     this.playback.pause()
                 } else {

@@ -157,7 +157,7 @@ public class MozartMetadataBuilder {
     }
 
     public MozartMetadataBuilder contentUri(String value) {
-        return putString(MozartMediaMetadata.META_DATA_CONTENT_URI, value);
+        return putString(MozartMediaMetadataKt.META_DATA_CONTENT_URI, value);
     }
 
     /**
@@ -167,14 +167,14 @@ public class MozartMetadataBuilder {
      * @see MediaInfo#STREAM_TYPE_INVALID
      */
     public MozartMetadataBuilder streamType(int value) {
-        return putLong(MozartMediaMetadata.META_DATA_STREAM_TYPE, value);
+        return putLong(MozartMediaMetadataKt.META_DATA_STREAM_TYPE, value);
     }
 
     /**
      * for example: audio/mp3
      */
     public MozartMetadataBuilder contentType(String value) {
-        mediaMetadata.putString(MozartMediaMetadata.META_DATA_CONTENT_TYPE, value);
+        mediaMetadata.putString(MozartMediaMetadataKt.META_DATA_CONTENT_TYPE, value);
         return this;
     }
 

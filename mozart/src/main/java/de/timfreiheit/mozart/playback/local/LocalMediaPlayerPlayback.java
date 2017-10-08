@@ -26,7 +26,7 @@ import android.text.TextUtils;
 
 import java.io.IOException;
 
-import de.timfreiheit.mozart.model.MozartMediaMetadata;
+import de.timfreiheit.mozart.model.MozartMediaMetadataKt;
 import timber.log.Timber;
 
 import static android.media.MediaPlayer.OnCompletionListener;
@@ -123,7 +123,7 @@ public class LocalMediaPlayerPlayback extends LocalPlayback implements
             relaxResources(false); // release everything except MediaPlayer
 
             //noinspection ResourceType
-            String source = MozartMediaMetadata.getContentUri(item);
+            String source = MozartMediaMetadataKt.getContentUri(item);
             if (source != null) {
                 source = source.replaceAll(" ", "%20"); // Escape spaces for URLs
             }
