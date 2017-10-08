@@ -29,7 +29,7 @@ import de.timfreiheit.mozart.MozartMusicService;
 import de.timfreiheit.mozart.model.MozartMediaMetadata;
 import de.timfreiheit.mozart.model.Playlist;
 import de.timfreiheit.mozart.model.image.CoverImage;
-import de.timfreiheit.mozart.utils.QueueHelper;
+import de.timfreiheit.mozart.utils.QueueHelperKt;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -81,14 +81,14 @@ public class QueueManager {
 
     public boolean setCurrentQueueItem(long queueId) {
         // set the current index on queue from the queue Id:
-        int index = QueueHelper.getMusicIndexOnQueue(playingQueue, queueId);
+        int index = QueueHelperKt.getMusicIndex(playingQueue, queueId);
         setCurrentQueueIndex(index);
         return index >= 0;
     }
 
     public boolean setCurrentQueueItem(String mediaId) {
         // set the current index on queue from the music Id:
-        int index = QueueHelper.getMusicIndexOnQueue(playingQueue, mediaId);
+        int index = QueueHelperKt.getMusicIndex(playingQueue, mediaId);
         setCurrentQueueIndex(index);
         return index >= 0;
     }
@@ -104,7 +104,7 @@ public class QueueManager {
                 index %= playingQueue.size();
             }
         }
-        if (!QueueHelper.isIndexPlayable(index, playingQueue)) {
+        if (!QueueHelperKt.isIndexPlayable(playingQueue, index)) {
             Timber.e("Cannot increment queue index by %d. Current=%d queue length=%d", amount, currentIndex, playingQueue.size());
             return false;
         }
@@ -113,7 +113,7 @@ public class QueueManager {
     }
 
     public MediaSessionCompat.QueueItem getCurrentMusic() {
-        if (!QueueHelper.isIndexPlayable(currentIndex, playingQueue)) {
+        if (!QueueHelperKt.isIndexPlayable(playingQueue, currentIndex)) {
             return null;
         }
         return playingQueue.get(currentIndex);
@@ -164,7 +164,7 @@ public class QueueManager {
     public Completable setQueueFromPlaylist(Playlist playlist, int initialPosition) {
         return Completable.fromAction(() -> {
             this.playlist = playlist;
-            setCurrentQueue(playlist.getTitle(), QueueHelper.mediaQueueFromPlaylist(playlist), initialPosition);
+            setCurrentQueue(playlist.getTitle(), QueueHelperKt.createMediaQueue(playlist), initialPosition);
         }).doOnComplete(this::updateMetadata);
     }
 
