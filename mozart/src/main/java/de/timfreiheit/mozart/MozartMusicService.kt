@@ -1,19 +1,3 @@
-/*
-* Copyright (C) 2014 The Android Open Source Project
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
-
 package de.timfreiheit.mozart
 
 import android.app.PendingIntent
@@ -114,7 +98,14 @@ import java.lang.ref.WeakReference
  */
 abstract class MozartMusicService : MediaBrowserServiceCompat(), PlaybackManager.PlaybackServiceCallback {
 
-    val queueManager: QueueManager by lazy { QueueManager(this, QueueManagerListener()) }
+    /**
+     * must be a singleton and lazy evaluated
+     */
+    open val queueManager: QueueManager by lazy { QueueManager(this) }
+
+    /**
+     * must be a singleton and lazy evaluated
+     */
     open val playbackManager: PlaybackManager by lazy { PlaybackManager(this) }
 
     val mediaSession: MediaSessionCompat by lazy { MediaSessionCompat(this, "MusicService")  }
@@ -127,6 +118,9 @@ abstract class MozartMusicService : MediaBrowserServiceCompat(), PlaybackManager
 
     abstract val mediaProvider: MozartMediaProvider
 
+    /**
+     * must be a singleton and lazy evaluated
+     */
     abstract val mediaNotificationManager: MozartMediaNotificationManager
 
     abstract val imageLoader: MozartMediaImageLoader
@@ -162,6 +156,8 @@ abstract class MozartMusicService : MediaBrowserServiceCompat(), PlaybackManager
         castPlaybackSwitcher.onCreate()
 
         mediaNotificationManager.onCreate()
+
+        queueManager.addListener(QueueManagerListener())
     }
 
     open fun getMediaSessionIntent(metadataCompat: MediaMetadataCompat?): PendingIntent? {
@@ -170,18 +166,14 @@ abstract class MozartMusicService : MediaBrowserServiceCompat(), PlaybackManager
                 intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
-    open fun createLocalPlayback(): Playback {
-        return MediaPlayerPlayback(this)
-    }
+    open fun createLocalPlayback(): Playback = MediaPlayerPlayback(this)
 
     /**
      * create cast playback
      * this can be depended on the current CastSession
      * should return null when the Service should not connect with this session
      */
-    open fun createCastPlayback(session: CastSession): Playback {
-        return CastPlayback(this)
-    }
+    open fun createCastPlayback(session: CastSession): Playback = CastPlayback(this)
 
     /**
      * (non-Javadoc)
@@ -324,7 +316,7 @@ abstract class MozartMusicService : MediaBrowserServiceCompat(), PlaybackManager
         imageLoaderCache.onTrimMemory(level)
     }
 
-    private inner class QueueManagerListener: QueueManager.MetadataUpdateListener {
+    open inner class QueueManagerListener: QueueManager.MetadataUpdateListener {
 
         /**
          * @see QueueManager.MetadataUpdateListener.onMetadataChanged

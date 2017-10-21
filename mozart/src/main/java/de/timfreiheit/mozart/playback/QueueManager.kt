@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2014 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package de.timfreiheit.mozart.playback
 
@@ -37,18 +22,23 @@ import timber.log.Timber
  * queue. Also provides methods to set the current queue based on common queries, relying on a
  * given MusicProvider to provide the actual media metadata.
  */
-class QueueManager(
-        private val mozartMusicService: MozartMusicService,
-        private val listener: MetadataUpdateListener
+open class QueueManager(
+        private val mozartMusicService: MozartMusicService
 ) {
 
-    // "Now playing" queue:
-    private var playlist: Playlist = Playlist(null, null, emptyList())
-    private var playingQueue: List<MediaSessionCompat.QueueItem> = listOf()
-    var currentIndex: Int = 0
-        private set
+    private val listeners = mutableSetOf<MetadataUpdateListener>()
 
-    var isInRepeatMode = false
+    // "Now playing" queue:
+    var playlist: Playlist = Playlist(null, null, emptyList())
+        protected set
+
+    var playingQueue: List<MediaSessionCompat.QueueItem> = listOf()
+        protected set
+
+    open var currentIndex: Int = 0
+        protected set
+
+    open val isInRepeatMode = false
 
     private val newMediaCompositeDisposable = CompositeDisposable()
 
@@ -66,8 +56,16 @@ class QueueManager(
     private fun setCurrentQueueIndex(index: Int) {
         if (index >= 0 && index < playingQueue.size) {
             currentIndex = index
-            listener.onCurrentQueueIndexUpdated(currentIndex)
+            listeners.forEach { it.onCurrentQueueIndexUpdated(currentIndex) }
         }
+    }
+
+    fun addListener(listener: MetadataUpdateListener) {
+        listeners.add(listener)
+    }
+
+    fun removeListener(listener: MetadataUpdateListener) {
+        listeners.remove(listener)
     }
 
     fun setCurrentQueueItem(queueId: Long): Boolean {
@@ -145,13 +143,14 @@ class QueueManager(
                                 initialPosition: Int = 0) {
         playingQueue = newQueue
         currentIndex = Math.max(initialPosition, 0)
-        listener.onQueueUpdated(title, newQueue)
+
+        listeners.forEach { it.onQueueUpdated(title, newQueue) }
     }
 
     fun updateMetadata() {
         val currentMusic = currentMusic
         if (currentMusic == null) {
-            listener.onMetadataRetrieveError()
+            listeners.forEach { it.onMetadataRetrieveError() }
             return
         }
 
@@ -168,9 +167,11 @@ class QueueManager(
         }.subscribeOn(Schedulers.io())
                 .subscribe({ metadata ->
 
-                    listener.onMetadataChanged(fetchMediaImages(MediaMetadataCompat.Builder(metadata)
-                            .putString(META_DATA_PLAYLIST, playlist.id)
-                            .build()))
+                    listeners.forEach {
+                        it.onMetadataChanged(fetchMediaImages(MediaMetadataCompat.Builder(metadata)
+                                .putString(META_DATA_PLAYLIST, playlist.id)
+                                .build()))
+                    }
 
                 }) { throw IllegalArgumentException("Invalid musicId " + currentMusic.description.mediaId!!) })
     }
@@ -195,7 +196,8 @@ class QueueManager(
                     }
 
                     val newMetadata = fillWithCoverImage(metadata, coverImage)
-                    listener.onMetadataChanged(newMetadata)
+
+                    listeners.forEach { it.onMetadataChanged(newMetadata) }
                 }) { throwable -> Timber.w(throwable, "loading cover failed") })
         return metadata
     }
