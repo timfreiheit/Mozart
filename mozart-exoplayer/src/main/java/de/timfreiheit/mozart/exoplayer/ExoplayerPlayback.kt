@@ -16,12 +16,14 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
-import de.timfreiheit.mozart.model.MozartMediaMetadata
+import de.timfreiheit.mozart.model.getContentUri
+import de.timfreiheit.mozart.playback.local.AUDIO_NO_FOCUS_CAN_DUCK
+import de.timfreiheit.mozart.playback.local.AUDIO_NO_FOCUS_NO_DUCK
 import de.timfreiheit.mozart.playback.local.LocalPlayback
 import timber.log.Timber
 
 
-class ExoplayerPlayback(context: Context) : LocalPlayback(context) {
+open class ExoplayerPlayback(context: Context) : LocalPlayback(context) {
     // The volume we set the media player to when we lose audio focus, but are
     // allowed to reduce the volume instead of stopping playback.
     private val VOLUME_DUCK = 0.2f
@@ -89,7 +91,7 @@ class ExoplayerPlayback(context: Context) : LocalPlayback(context) {
         }
 
         releaseResources(false) // release everything except the player
-        var source = MozartMediaMetadata.getContentUri(item)
+        var source = item.getContentUri()
 
         if (source != null) {
             source = source.replace(" ".toRegex(), "%20") // Escape spaces for URLs
@@ -101,16 +103,7 @@ class ExoplayerPlayback(context: Context) : LocalPlayback(context) {
             exoPlayer?.addListener(eventListener)
         }
 
-        // Android "O" makes much greater use of AudioAttributes, especially
-        // with regards to AudioFocus. All of UAMP's tracks are music, but
-        // if your content includes spoken word such as audiobooks or podcasts
-        // then the content type should be set to CONTENT_TYPE_SPEECH for those
-        // tracks.
-        val audioAttributes = AudioAttributes.Builder()
-                .setContentType(CONTENT_TYPE_MUSIC)
-                .setUsage(USAGE_MEDIA)
-                .build()
-        exoPlayer?.audioAttributes = audioAttributes
+        updateAudioAttributes(item)
 
         // Produces DataSource instances through which media data is loaded.
         val dataSourceFactory = DefaultDataSourceFactory(
@@ -132,6 +125,18 @@ class ExoplayerPlayback(context: Context) : LocalPlayback(context) {
 
 
         configurePlayerState()
+    }
+
+    /**
+     * @see SimpleExoPlayer.setAudioAttributes
+     * by default is uses [CONTENT_TYPE_MUSIC] with [USAGE_MEDIA]
+     */
+    open fun updateAudioAttributes(item: MediaMetadataCompat) {
+        val audioAttributes = AudioAttributes.Builder()
+                .setContentType(CONTENT_TYPE_MUSIC)
+                .setUsage(USAGE_MEDIA)
+                .build()
+        exoPlayer?.audioAttributes = audioAttributes
     }
 
     override fun setState(state: Int) {

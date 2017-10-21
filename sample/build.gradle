@@ -54,5 +54,5 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
     compile project(path: ':mozart')
-    compile project(path: ':mozart-exoplayer')
+//    compile project(path: ':mozart-exoplayer')
 }

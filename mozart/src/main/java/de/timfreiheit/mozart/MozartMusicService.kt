@@ -39,7 +39,7 @@ import de.timfreiheit.mozart.playback.PlaybackManager
 import de.timfreiheit.mozart.playback.QueueManager
 import de.timfreiheit.mozart.playback.cast.CastPlayback
 import de.timfreiheit.mozart.playback.cast.CastPlaybackSwitcher
-import de.timfreiheit.mozart.playback.local.LocalMediaPlayerPlayback
+import de.timfreiheit.mozart.playback.local.MediaPlayerPlayback
 import de.timfreiheit.mozart.ui.OpenAppShadowActivity
 import de.timfreiheit.mozart.utils.WearHelper
 import timber.log.Timber
@@ -171,7 +171,7 @@ abstract class MozartMusicService : MediaBrowserServiceCompat(), PlaybackManager
     }
 
     open fun createLocalPlayback(): Playback {
-        return LocalMediaPlayerPlayback(this)
+        return MediaPlayerPlayback(this)
     }
 
     /**
