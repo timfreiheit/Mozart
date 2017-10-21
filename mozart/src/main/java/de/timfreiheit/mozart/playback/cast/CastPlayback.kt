@@ -153,7 +153,7 @@ class CastPlayback(private val service: MozartMusicService) : Playback() {
         val customData = JSONObject()
         customData.put(ITEM_ID, item.description.mediaId)
         customData.put(PLAYLIST_ID, service.queueManager.playlistId)
-        val media = MediaInfoUtils.metaDataToMediaInfo(item, customData)
+        val media = item.toMediaInfo(customData)
         Timber.d("loadMedia(%s)", item.description.mediaId)
         remoteMediaClient.load(media, autoPlay, currentPosition, customData)
     }
@@ -191,11 +191,11 @@ class CastPlayback(private val service: MozartMusicService) : Playback() {
                                 service.queueManager.setQueueFromPlaylist(playlist, index)
                             }
                 }
-                completable.onErrorResumeNext { throwable ->
+                completable.onErrorResumeNext {
                     if (remoteMediaId != null) {
                         service.mediaProvider.getMediaById(remoteMediaId)
                                 .subscribeOn(Schedulers.io())
-                                .flatMapCompletable { mediaMetadata ->
+                                .flatMapCompletable {
                                     Timber.d("setQueueByMediaId(%s)", remoteMediaId)
                                     service.queueManager.setQueueByMediaId(remoteMediaId)
                                 }
@@ -207,7 +207,7 @@ class CastPlayback(private val service: MozartMusicService) : Playback() {
                         Completable.complete()
                     }
                 }.observeOn(AndroidSchedulers.mainThread())
-                        .subscribe({ this.updateLastKnownStreamPosition() }) { throwable ->
+                        .subscribe({ this.updateLastKnownStreamPosition() }) {
                             // remote media not found. stop playback
                             onStop(true)
                         }
