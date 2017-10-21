@@ -36,7 +36,9 @@ object Mozart {
 
     fun executeCommand(command: MozartPlayCommand) {
         checkIfInitialized()
-        context?.startService(MozartServiceActions.executeCommand(context!!, command))
+        context?.let { context ->
+            context.startService(MozartServiceActions.executeCommand(context, command))
+        }
     }
 
     var mediaSessionToken: MediaSessionCompat.Token?
