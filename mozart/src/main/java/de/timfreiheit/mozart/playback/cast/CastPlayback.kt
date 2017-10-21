@@ -61,21 +61,22 @@ class CastPlayback(private val service: MozartMusicService) : Playback() {
         }
     }
 
-    override fun getCurrentStreamPosition(): Long {
-        return if (!isConnected) {
-            currentPosition
-        } else remoteMediaClient.approximateStreamPosition
-    }
+    override var currentStreamPosition: Long
+        set(value) {
+            this.currentPosition = value
+        }
+        get() {
+            return if (!isConnected) {
+                currentPosition
+            } else remoteMediaClient.approximateStreamPosition
+        }
 
-    override fun getStreamDuration(): Long {
-        return if (!isConnected) {
-            duration
-        } else remoteMediaClient.streamDuration
-    }
-
-    override fun setCurrentStreamPosition(pos: Long) {
-        this.currentPosition = pos
-    }
+    override val streamDuration: Long
+        get() {
+            return if (!isConnected) {
+                duration
+            } else remoteMediaClient.streamDuration
+        }
 
     override fun updateLastKnownStreamPosition() {
         currentPosition = currentStreamPosition
@@ -134,19 +135,21 @@ class CastPlayback(private val service: MozartMusicService) : Playback() {
 
     }
 
-    override fun isConnected(): Boolean {
-        val castSession = CastContext.getSharedInstance(service.applicationContext).sessionManager
-                .currentCastSession
-        return castSession != null && castSession.isConnected
-    }
+    override val isConnected: Boolean
+        get() {
+            val castSession = CastContext.getSharedInstance(service.applicationContext).sessionManager
+                    .currentCastSession
+            return castSession != null && castSession.isConnected
+        }
 
-    override fun isPlaying(): Boolean = isConnected && remoteMediaClient.isPlaying
+    override val isPlaying: Boolean
+        get() = isConnected && remoteMediaClient.isPlaying
 
     private fun loadMedia(item: MediaMetadataCompat?, autoPlay: Boolean) {
         if (item == null) {
             return
         }
-        if (currentMedia == null || !TextUtils.equals(item.description.mediaId, currentMedia.description.mediaId)) {
+        if (currentMedia == null || !TextUtils.equals(item.description.mediaId, currentMedia?.description?.mediaId)) {
             currentMedia = item
             currentPosition = 0
         }
@@ -174,7 +177,7 @@ class CastPlayback(private val service: MozartMusicService) : Playback() {
 
                 Timber.d("setMetadataFromRemote(%s)", remoteMediaId)
 
-                if (remoteMediaId != null && currentMedia != null && TextUtils.equals(remoteMediaId, currentMedia.description.mediaId)) {
+                if (remoteMediaId != null && currentMedia != null && TextUtils.equals(remoteMediaId, currentMedia?.description?.mediaId)) {
                     return
                 }
 

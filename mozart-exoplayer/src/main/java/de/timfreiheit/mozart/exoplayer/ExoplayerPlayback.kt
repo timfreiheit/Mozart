@@ -42,25 +42,19 @@ open class ExoplayerPlayback(context: Context) : LocalPlayback(context) {
     // Whether to return STATE_NONE or STATE_STOPPED when mExoPlayer is null;
     private var exoPlayerNullIsStopped = false
 
-    override fun isConnected() = true
+    override val isConnected = true
 
     private var playOnFocusGain: Boolean = false
 
-    override fun isPlaying(): Boolean {
-        return playOnFocusGain || exoPlayer?.playWhenReady ?: false
-    }
+    override val isPlaying: Boolean
+        get() = playOnFocusGain || exoPlayer?.playWhenReady ?: false
 
-    override fun getCurrentStreamPosition(): Long {
-        return exoPlayer?.currentPosition ?: 0
-    }
+    override var currentStreamPosition: Long
+        set(value) {}
+        get() = exoPlayer?.currentPosition ?: 0
 
-    override fun getStreamDuration(): Long {
-        return exoPlayer?.duration ?: 0
-    }
-
-    override fun setCurrentStreamPosition(pos: Long) {
-
-    }
+    override val streamDuration: Long
+        get() = exoPlayer?.duration ?: 0
 
     override fun updateLastKnownStreamPosition() {
         // Nothing to do. Position maintained by ExoPlayer.
@@ -84,7 +78,7 @@ open class ExoplayerPlayback(context: Context) : LocalPlayback(context) {
         super.play(item)
         playOnFocusGain = true
         val mediaId = item.description.mediaId
-        val mediaHasChanged = currentMedia == null || mediaId != currentMedia.description.mediaId
+        val mediaHasChanged = currentMedia == null || mediaId != currentMedia?.description?.mediaId
         if (mediaHasChanged) {
             currentPosition = 0
             currentMedia = item
@@ -139,28 +133,28 @@ open class ExoplayerPlayback(context: Context) : LocalPlayback(context) {
         exoPlayer?.audioAttributes = audioAttributes
     }
 
-    override fun setState(state: Int) {
-        super.setState(state)
-    }
-
-    override fun getState(): Int {
-        if (exoPlayer == null) {
-            return if (exoPlayerNullIsStopped)
-                PlaybackStateCompat.STATE_STOPPED
-            else
-                PlaybackStateCompat.STATE_NONE
+    override var state: Int
+        set(value) {
+            super.state = value
         }
-        when (exoPlayer?.playbackState) {
-            Player.STATE_IDLE -> return PlaybackStateCompat.STATE_PAUSED
-            Player.STATE_BUFFERING -> return PlaybackStateCompat.STATE_BUFFERING
-            Player.STATE_READY -> return if (exoPlayer?.playWhenReady ?: false)
-                PlaybackStateCompat.STATE_PLAYING
-            else
-                PlaybackStateCompat.STATE_PAUSED
-            Player.STATE_ENDED -> return PlaybackStateCompat.STATE_PAUSED
-            else -> return PlaybackStateCompat.STATE_NONE
+        get() {
+            if (exoPlayer == null) {
+                return if (exoPlayerNullIsStopped)
+                    PlaybackStateCompat.STATE_STOPPED
+                else
+                    PlaybackStateCompat.STATE_NONE
+            }
+            when (exoPlayer?.playbackState) {
+                Player.STATE_IDLE -> return PlaybackStateCompat.STATE_PAUSED
+                Player.STATE_BUFFERING -> return PlaybackStateCompat.STATE_BUFFERING
+                Player.STATE_READY -> return if (exoPlayer?.playWhenReady ?: false)
+                    PlaybackStateCompat.STATE_PLAYING
+                else
+                    PlaybackStateCompat.STATE_PAUSED
+                Player.STATE_ENDED -> return PlaybackStateCompat.STATE_PAUSED
+                else -> return PlaybackStateCompat.STATE_NONE
+            }
         }
-    }
 
     override fun seekTo(position: Long) {
         exoPlayer?.seekTo(position)

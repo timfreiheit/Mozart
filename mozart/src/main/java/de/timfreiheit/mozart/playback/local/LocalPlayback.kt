@@ -9,15 +9,10 @@ import android.support.annotation.CallSuper
 import android.support.annotation.IntDef
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
-
+import android.support.v4.media.session.PlaybackStateCompat.*
 import de.timfreiheit.mozart.MozartServiceActions
 import de.timfreiheit.mozart.playback.Playback
-import de.timfreiheit.mozart.playback.PlaybackCallbackDelegate
 import timber.log.Timber
-
-import android.support.v4.media.session.PlaybackStateCompat.STATE_BUFFERING
-import android.support.v4.media.session.PlaybackStateCompat.STATE_CONNECTING
-import android.support.v4.media.session.PlaybackStateCompat.STATE_PLAYING
 
 
 // we don't have audio focus, and can't duck (play at a low volume)
@@ -59,8 +54,14 @@ abstract class LocalPlayback(val context: Context) : Playback(), AudioManager.On
     annotation class AudioFocusStatus
 
     init {
-        @Suppress("LeakingThis")
-        setCallback(null)
+        addCallback(object : SimpleCallback() {
+            override fun onPlaybackStatusChanged(@PlaybackStateCompat.State state: Int) {
+                when (state) {
+                    STATE_BUFFERING, STATE_CONNECTING, STATE_PLAYING -> registerAudioNoisyReceiver()
+                    else -> unregisterAudioNoisyReceiver()
+                }
+            }
+        })
     }
 
     @CallSuper
@@ -78,19 +79,6 @@ abstract class LocalPlayback(val context: Context) : Playback(), AudioManager.On
         if (isPlaying) {
             context.startService(MozartServiceActions.pause(context))
         }
-    }
-
-    @CallSuper
-    override fun setCallback(callback: Playback.Callback?) {
-        super.setCallback(object : PlaybackCallbackDelegate(callback) {
-            override fun onPlaybackStatusChanged(@PlaybackStateCompat.State state: Int) {
-                super.onPlaybackStatusChanged(state)
-                when (state) {
-                    STATE_BUFFERING, STATE_CONNECTING, STATE_PLAYING -> registerAudioNoisyReceiver()
-                    else -> unregisterAudioNoisyReceiver()
-                }
-            }
-        })
     }
 
     protected fun registerAudioNoisyReceiver() {

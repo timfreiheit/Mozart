@@ -71,7 +71,7 @@ open class PlaybackManager(service: MozartMusicService) : Playback.Callback {
     init {
         this.serviceCallback = service
         this.mozartMusicService = service
-        this.playback.callback = this
+        this.playback.addCallback(this)
     }
 
     fun getMediaSessionCallback(): MediaSessionCompat.Callback {
@@ -226,7 +226,7 @@ open class PlaybackManager(service: MozartMusicService) : Playback.Callback {
         updatePlaybackState()
     }
 
-    override fun onError(error: String) {
+    override fun onError(error: String?) {
         updatePlaybackState(error)
     }
 
@@ -242,7 +242,7 @@ open class PlaybackManager(service: MozartMusicService) : Playback.Callback {
         val pos = this.playback.currentStreamPosition
         val currentMedia = this.playback.currentMedia
         this.playback.onStop(false)
-        playback.callback = this
+        playback.addCallback(this)
         playback.currentStreamPosition = if (pos < 0) 0 else pos
         playback.currentMedia = currentMedia
         playback.onStart()

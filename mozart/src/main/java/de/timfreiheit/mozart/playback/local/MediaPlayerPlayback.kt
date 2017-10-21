@@ -57,25 +57,31 @@ open class MediaPlayerPlayback(context: Context) : LocalPlayback(context), OnCom
         relaxResources(true)
     }
 
-    override fun isConnected() = true
+    override val isConnected = true
 
-    override fun isPlaying() = playOnFocusGain || mediaPlayer?.isPlaying == true
+    override val isPlaying
+        get() = playOnFocusGain || mediaPlayer?.isPlaying == true
 
-    override fun getCurrentStreamPosition(): Long {
-        return if (mediaPlayer != null && isPrepared) {
-            mediaPlayer?.currentPosition?.toLong() ?: currentPosition
-        } else {
-            currentPosition
+    override var currentStreamPosition: Long
+        get() {
+            return if (mediaPlayer != null && isPrepared) {
+                mediaPlayer?.currentPosition?.toLong() ?: currentPosition
+            } else {
+                currentPosition
+            }
         }
-    }
-
-    override fun getStreamDuration(): Long {
-        return if (mediaPlayer != null && isPrepared) {
-            mediaPlayer?.duration?.toLong() ?: duration
-        } else {
-            duration
+        set(value) {
+            this.currentPosition = value
         }
-    }
+
+    override val streamDuration: Long
+        get() {
+            return if (mediaPlayer != null && isPrepared) {
+                mediaPlayer?.duration?.toLong() ?: duration
+            } else {
+                duration
+            }
+        }
 
     override fun updateLastKnownStreamPosition() {
         mediaPlayer?.let { mediaPlayer ->
@@ -88,7 +94,7 @@ open class MediaPlayerPlayback(context: Context) : LocalPlayback(context), OnCom
         super.play(item)
         playOnFocusGain = true
         val mediaId = item.description.mediaId
-        val mediaHasChanged = currentMedia == null || !TextUtils.equals(mediaId, currentMedia.description.mediaId)
+        val mediaHasChanged = currentMedia == null || !TextUtils.equals(mediaId, currentMedia?.description?.mediaId)
         if (mediaHasChanged) {
             currentPosition = 0
             currentMedia = item
@@ -184,10 +190,6 @@ open class MediaPlayerPlayback(context: Context) : LocalPlayback(context), OnCom
             mediaPlayer.seekTo(position.toInt())
             callback.onPlaybackStatusChanged(state)
         }
-    }
-
-    override fun setCurrentStreamPosition(pos: Long) {
-        this.currentPosition = pos
     }
 
     /**
