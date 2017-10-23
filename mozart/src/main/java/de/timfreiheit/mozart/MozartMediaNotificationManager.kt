@@ -33,7 +33,7 @@ import timber.log.Timber
  * MediaSession. Maintaining a visible notification (usually) guarantees that the music service
  * won't be killed during playback.
  */
-abstract class MozartMediaNotificationManager @Throws(RemoteException::class) constructor(
+open class MozartMediaNotificationManager @Throws(RemoteException::class) constructor(
         private val service: MozartMusicService
 ) {
     private var sessionToken: MediaSessionCompat.Token? = null
@@ -51,10 +51,23 @@ abstract class MozartMediaNotificationManager @Throws(RemoteException::class) co
 
     open val notificationId: Int = 412
 
-    val notificationChannelId: String by lazy { createPlaybackChannel(service.applicationContext) }
+    open val notificationChannelId: String by lazy { createPlaybackChannel(service.applicationContext) }
 
-    val notificationColor: Int = this.service.getThemeColor(R.attr.colorPrimary,
+    open val notificationColor: Int = this.service.getThemeColor(R.attr.colorPrimary,
             Color.DKGRAY)
+
+    /**
+     * @see NotificationCompat.Builder.setSmallIcon
+     */
+    open val notificationIcon: Int
+        get() = service.applicationInfo.icon
+
+    /**
+     * @see NotificationCompat.Builder.setLargeIcon
+     */
+    open val defaultCover: CoverImage
+        get() = CoverImage(BitmapFactory.decodeResource(service.resources, R.drawable.ic_default_art), null)
+
 
     private var started = false
 
@@ -301,11 +314,6 @@ abstract class MozartMediaNotificationManager @Throws(RemoteException::class) co
 
         return notificationBuilder.build()
     }
-
-    abstract val notificationIcon: Int
-
-    open val defaultCover: CoverImage
-        get() = CoverImage(BitmapFactory.decodeResource(service.resources, R.drawable.ic_default_art), null)
 
     open fun createMediaStyle(availableActions: Int): android.support.v4.media.app.NotificationCompat.MediaStyle {
         val actionCount = when {

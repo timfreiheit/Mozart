@@ -121,7 +121,7 @@ abstract class MozartMusicService : MediaBrowserServiceCompat(), PlaybackManager
     /**
      * must be a singleton and lazy evaluated
      */
-    abstract val mediaNotificationManager: MozartMediaNotificationManager
+    open val mediaNotificationManager: MozartMediaNotificationManager by lazy { MozartMediaNotificationManager(this) }
 
     abstract val imageLoader: MozartMediaImageLoader
 
