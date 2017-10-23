@@ -39,7 +39,7 @@ class PlaylistActivity : BaseActivity() {
                     .build()
 
             val mediaController = Mozart.mediaController
-            if (mediaController == null || mediaController.metadata == null || mediaController.metadata.description.mediaId != id) {
+            if (mediaController == null || mediaController.metadata?.description?.mediaId != id) {
                 Mozart.executeCommand(playCommand)
             } else {
                 when (mediaController.playbackState.state) {
