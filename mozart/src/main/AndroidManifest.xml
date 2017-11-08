@@ -6,11 +6,11 @@
 
     <application>
 
-        <notificationActionReceiver android:name="android.support.v4.media.session.MediaButtonReceiver">
+        <receiver android:name="android.support.v4.media.session.MediaButtonReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON"/>
             </intent-filter>
-        </notificationActionReceiver>
+        </receiver>
 
         <activity android:name=".ui.OpenAppShadowActivity"/>
 

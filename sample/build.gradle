@@ -1,12 +1,10 @@
 apply plugin: 'com.android.application'
-apply plugin: 'me.tatarka.retrolambda'
 
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "25.0.3"
     defaultConfig {
         applicationId "de.timfreiheit.mozart.sample"
         minSdkVersion 19
@@ -22,11 +20,6 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     dataBinding {
@@ -55,4 +48,14 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile project(path: ':mozart')
 //    compile project(path: ':mozart-exoplayer')
+}
+
+afterEvaluate {
+    project.android.applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            output.processResources.doFirst {
+
+            }
+        }
+    }
 }
