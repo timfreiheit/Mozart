@@ -1,6 +1,7 @@
 package de.timfreiheit.mozart.exoplayer
 
 import android.content.Context
+import android.media.MediaPlayer
 import android.net.Uri
 import android.net.wifi.WifiManager
 import android.support.v4.media.MediaMetadataCompat
@@ -44,6 +45,8 @@ open class ExoplayerPlayback(context: Context) : LocalPlayback(context) {
 
     override val isConnected = true
 
+    var isPreparing = false
+
     private var playOnFocusGain: Boolean = false
 
     override val isPlaying: Boolean
@@ -63,6 +66,7 @@ open class ExoplayerPlayback(context: Context) : LocalPlayback(context) {
     override fun pause() {
         // Pause player and cancel the 'foreground service' state.
         exoPlayer?.playWhenReady = false
+        currentPosition = currentStreamPosition
         // While paused, retain the player instance, but give up audio focus.
         releaseResources(false)
     }
@@ -108,6 +112,7 @@ open class ExoplayerPlayback(context: Context) : LocalPlayback(context) {
         val mediaSource = ExtractorMediaSource(
                 Uri.parse(source), dataSourceFactory, extractorsFactory, null, null)
 
+        isPreparing = true
         // Prepares media to play (happens on background thread) and triggers
         // {@code onPlayerStateChanged} callback when the stream is ready to play.
         exoPlayer?.prepare(mediaSource)
@@ -214,7 +219,13 @@ open class ExoplayerPlayback(context: Context) : LocalPlayback(context) {
         }
     }
 
+    open fun onPrepared() {
+        Timber.d("onPrepared")
+        exoPlayer?.seekTo(currentPosition)
+    }
+
     private inner class ExoPlayerEventListener : Player.EventListener {
+
         override fun onTimelineChanged(timeline: Timeline, manifest: Any?) {
             // Nothing to do.
         }
@@ -229,6 +240,10 @@ open class ExoplayerPlayback(context: Context) : LocalPlayback(context) {
         }
 
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+            if (isPreparing && playbackState == Player.STATE_READY) {
+                isPreparing = false
+                onPrepared()
+            }
             when (playbackState) {
                 Player.STATE_IDLE, Player.STATE_BUFFERING, Player.STATE_READY -> {
                     val state = state
