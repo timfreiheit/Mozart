@@ -3,7 +3,7 @@ package de.timfreiheit.mozart
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ResolveInfo
+import android.os.Bundle
 import android.support.v4.media.MediaBrowserServiceCompat
 
 internal object MozartServiceActions {
@@ -48,6 +48,17 @@ internal object MozartServiceActions {
         val intent = Intent(context, getMusicService(context))
         intent.action = MozartMusicService.ACTION_CMD
         intent.putExtra(MozartMusicService.CMD_NAME, MozartMusicService.CMD_STOP_CASTING)
+        return intent
+    }
+
+    fun executeCustomCommand(context: Context, command: String, extras: Bundle?): Intent {
+        val intent = Intent(context, getMusicService(context))
+        intent.action = MozartMusicService.ACTION_CMD
+        intent.putExtra(MozartMusicService.CMD_NAME, MozartMusicService.CMD_CUSTOM)
+        intent.putExtra(MozartMusicService.CMD_NAME_CUSTOM, command)
+        if (extras != null) {
+            intent.putExtra(MozartMusicService.ARGS_START_COMMAND, extras)
+        }
         return intent
     }
 

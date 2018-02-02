@@ -1,6 +1,8 @@
 package de.timfreiheit.mozart
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Bundle
 import android.os.RemoteException
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
@@ -11,7 +13,9 @@ import com.gojuno.koptional.toOptional
 import de.timfreiheit.mozart.playback.cast.CastReconnector
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
+import de.timfreiheit.mozart.playback.PlaybackManager
 
+@SuppressLint("StaticFieldLeak")
 object Mozart {
 
     private var initialized = false
@@ -38,6 +42,16 @@ object Mozart {
         checkIfInitialized()
         context?.let { context ->
             context.startService(MozartServiceActions.executeCommand(context, command))
+        }
+    }
+
+    /**
+     * @see [PlaybackManager.handleCustomCommand]
+     */
+    fun executeCustomCommand(command: String, extras: Bundle?) {
+        checkIfInitialized()
+        context?.let { context ->
+            context.startService(MozartServiceActions.executeCustomCommand(context, command, extras))
         }
     }
 

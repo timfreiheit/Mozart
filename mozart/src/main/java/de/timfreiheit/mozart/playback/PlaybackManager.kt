@@ -1,6 +1,5 @@
 package de.timfreiheit.mozart.playback
 
-import android.os.AsyncTask
 import android.os.Bundle
 import android.os.SystemClock
 import android.support.v4.media.MediaMetadataCompat
@@ -18,10 +17,11 @@ import timber.log.Timber
 /**
  * Manage the interactions among the container service, the queue manager and the actual playback.
  */
-open class PlaybackManager(service: MozartMusicService) : Playback.Callback {
+open class PlaybackManager(
+        val mozartMusicService: MozartMusicService
+) : Playback.Callback {
 
-    private val mozartMusicService: MozartMusicService
-    var playback: Playback = service.createLocalPlayback()
+    var playback: Playback = mozartMusicService.createLocalPlayback()
         private set
     private val serviceCallback: PlaybackServiceCallback
     val mediaSessionCallback: MediaSessionCallback = MediaSessionCallback()
@@ -53,8 +53,7 @@ open class PlaybackManager(service: MozartMusicService) : Playback.Callback {
         }
 
     init {
-        this.serviceCallback = service
-        this.mozartMusicService = service
+        this.serviceCallback = mozartMusicService
         this.playback.addCallback(this)
     }
 
@@ -275,26 +274,23 @@ open class PlaybackManager(service: MozartMusicService) : Playback.Callback {
     }
 
     /**
-     * Handle free and contextual searches.
+     * Called when a {@link MediaControllerCompat} wants a
+     * {@link PlaybackStateCompat.CustomAction} to be performed.
      *
-     *
-     * All voice searches on Android Auto are sent to this method through a connected
-     * [android.support.v4.media.session.MediaControllerCompat].
-     *
-     *
-     * Threads and async handling:
-     * Search, as a potentially slow operation, should run in another thread.
-     *
-     *
-     * Since this method runs on the main thread, most apps with non-trivial metadata
-     * should defer the actual search to another thread (for example, by using
-     * an [AsyncTask] as we do here).
+     * @param action The action that was originally sent in the
+     *            {@link PlaybackStateCompat.CustomAction}.
+     * @param extras Optional extras specified by the
+     *            {@link MediaControllerCompat}.
+     * @see #ACTION_FLAG_AS_INAPPROPRIATE
+     * @see #ACTION_SKIP_AD
+     * @see #ACTION_FOLLOW
+     * @see #ACTION_UNFOLLOW
      */
-    fun handleCustomAction(action: String, extras: Bundle?) {
+    open fun handleCustomAction(action: String, extras: Bundle?) {
         Timber.d("handleCustomAction() called with action = [$action], extras = [$extras]")
     }
 
-    fun handlePlayFromSearch(query: String?, extras: Bundle?) {
+    open fun handlePlayFromSearch(query: String?, extras: Bundle?) {
         Timber.d("playFromSearch  query=%s  extras=%s", query, extras)
     }
 
@@ -314,6 +310,10 @@ open class PlaybackManager(service: MozartMusicService) : Playback.Callback {
                 handlePlayPlaylist(playlistId, playCommand.playlistPosition())
             }
         }
+    }
+
+    open fun handleCustomCommand(command: String, extras: Bundle?) {
+
     }
 
     open inner class MediaSessionCallback : MediaSessionCompat.Callback() {
@@ -384,4 +384,5 @@ open class PlaybackManager(service: MozartMusicService) : Playback.Callback {
 
         fun onPlaybackStateUpdated(newState: PlaybackStateCompat)
     }
+
 }

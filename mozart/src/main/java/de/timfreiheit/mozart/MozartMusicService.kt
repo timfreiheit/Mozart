@@ -202,13 +202,20 @@ abstract class MozartMusicService : MediaBrowserServiceCompat(), PlaybackManager
         when (command) {
             CMD_PAUSE -> playbackManager.handlePauseRequest()
             CMD_PLAY -> {
-
                 val playCommand = startIntent.getParcelableExtra<MozartPlayCommand>(ARGS_START_COMMAND)
                 playbackManager.handlePlayCommand(playCommand)
             }
             CMD_STOP_CASTING -> {
                 castPlaybackSwitcher.stopCasting()
                 onPlaybackStop()
+            }
+            CMD_CUSTOM -> {
+                val customCommand: String = startIntent.getStringExtra(CMD_NAME_CUSTOM)
+                val extras: Bundle? = startIntent.getBundleExtra(ARGS_START_COMMAND)
+                playbackManager.handleCustomCommand(customCommand, extras)
+            }
+            else -> {
+                Timber.d("unhandled command: $command")
             }
         }
     }
@@ -360,7 +367,9 @@ abstract class MozartMusicService : MediaBrowserServiceCompat(), PlaybackManager
         val ACTION_CMD = "de.timfreiheit.mozart.ACTION_CMD"
 
         val CMD_NAME = "CMD_NAME"
+        val CMD_NAME_CUSTOM = "CMD_NAME_CUSTOM"
 
+        val CMD_CUSTOM = "CMD_CUSTOM"
         val CMD_PLAY = "CMD_PLAY"
         val CMD_PAUSE = "CMD_PAUSE"
         val CMD_STOP_CASTING = "CMD_STOP_CASTING"
